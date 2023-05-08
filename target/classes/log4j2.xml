@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+S’ha de tenir en compte que el mostrat en mode DEBUG o TRACE pot contenir dades 
+"sensibles" o compromeses i que un cop finalitzat el procés de desenvolupament, 
+aquests missatges s’han de revisar o eliminar per tal de no ser accedits per 
+usuaris no autoritzats.
+-->
+<Configuration>
+    
+  <!-- nivell de missatges que volem mostrar a determinades parts del codi -->
+  <Loggers>
+  
+    <!-- Etiqueta Root: valor per defecte. Queda definit el nivell TRACE per a tot el codi -->
+    <Root level="TRACE"> <!-- Log levels: FATAL, ERROR, WARN, INFO, DEBUG, TRACE o ALL, OFF(Log desactivat) -->
+      <AppenderRef ref="ConsoleUser" />
+    </Root>
+  
+     <!-- Hibernate -->
+    <Logger name="org.hibernate" level="ERROR" additivity="false">
+      <AppenderRef ref="Console" />
+    </Logger>
+
+    <!-- Sentències SQL -->
+    <Logger name="org.hibernate.SQL" level="ERROR" additivity="false">
+      <AppenderRef ref="Console" />
+    </Logger>
+  </Loggers>
+
+  <!-- Cada Appender defineix una sortida per als Loggers anteriors -->
+  <Appenders>
+    <!-- Sortida per pantalla -->
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{MM-dd-MM-yy HH:mm:ss:nnn} [%t] %-5level %logger{36} - %msg%n" />
+    </Console>
+    
+    <Console name="ConsoleUser" target="SYSTEM_OUT">
+      <PatternLayout pattern="%msg%n" />
+    </Console>
+  </Appenders>
+
+</Configuration>

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.media.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fx:id="pagina" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" minHeight="-Infinity" minWidth="-Infinity" pannable="true" prefHeight="600.0" prefWidth="850.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.JocController">
+    <content>
+        <BorderPane>
+            <top>
+                <GridPane id="container_top" alignment="TOP_CENTER">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <HBox id="titol_pastilles" fx:id="titol" alignment="CENTER" spacing="5.0" stylesheets="@../../styles/styles.css">
+                            <children>
+                                <Label text="W">
+                                    <styleClass>
+                                        <String fx:value="casella" />
+                                        <String fx:value="casella-verda" />
+                                    </styleClass>
+                                </Label>
+                                <Label text="O">
+                                    <styleClass>
+                                        <String fx:value="casella" />
+                                        <String fx:value="casella-grisa" />
+                                    </styleClass>
+                                </Label>
+                                <Label text="R">
+                                    <styleClass>
+                                        <String fx:value="casella" />
+                                        <String fx:value="casella-taronja" />
+                                    </styleClass>
+                                </Label>
+                                <Label text="D">
+                                    <styleClass>
+                                        <String fx:value="casella" />
+                                        <String fx:value="casella-grisa" />
+                                    </styleClass>
+                                </Label>
+                                <Label text="L">
+                                    <styleClass>
+                                        <String fx:value="casella" />
+                                        <String fx:value="casella-verda" />
+                                    </styleClass>
+                                </Label>
+                                <Label text="E">
+                                    <styleClass>
+                                        <String fx:value="casella" />
+                                        <String fx:value="casella-grisa" />
+                                    </styleClass>
+                                </Label>
+                            </children>
+                        </HBox>
+                        <HBox id="menu" fx:id="botonera" alignment="CENTER_RIGHT" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../../styles/styles.css">
+                            <children>
+                                <Button fx:id="btn_ajuda" alignment="CENTER" contentDisplay="TOP" mnemonicParsing="false" style="-fx-background-color: none;" styleClass="cursor-hand" text="ajuda">
+                                    <graphic>
+                                        <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true" styleClass="cursor-hand">
+                                            <image>
+                                                <Image url="@../../images/btn_ajuda.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Separator orientation="VERTICAL" prefWidth="10.0" visible="false" />
+                                <Button fx:id="btn_sortir" alignment="CENTER" contentDisplay="TOP" mnemonicParsing="false" style="-fx-background-color: none;" styleClass="cursor-hand" text="sortir">
+                                    <graphic>
+                                        <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true" styleClass="cursor-hand">
+                                            <image>
+                                                <Image url="@../../images/btn_sortir.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                            </children>
+                        </HBox>
+                    </children>
+                </GridPane>
+            </top>
+            <bottom>
+                <VBox id="container_bottom" alignment="CENTER" BorderPane.alignment="CENTER">
+                    <children>
+                        <GridPane fx:id="teclatFila1" alignment="BOTTOM_CENTER" hgap="4" vgap="2" VBox.vgrow="NEVER" />
+         
+                        <GridPane fx:id="teclatFila2" alignment="BOTTOM_CENTER" hgap="4" vgap="2" VBox.vgrow="NEVER" />
+         
+                        <GridPane fx:id="teclatFila3" alignment="BOTTOM_CENTER" hgap="4" vgap="2" VBox.vgrow="NEVER" />
+                    </children>
+                </VBox>
+            </bottom>
+         <center>
+            <GridPane id="container_middle" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" BorderPane.alignment="CENTER">
+               <children>
+                      <VBox id="graella-lletres" alignment="CENTER" GridPane.columnIndex="1">
+                          <children>
+                              <HBox id="temporitzador" alignment="CENTER" fillHeight="false" maxHeight="-Infinity" minHeight="-Infinity" stylesheets="@../../styles/styles.css" VBox.vgrow="NEVER">
+                                  <children>
+                                      <Label text="Temps restant:">
+                                          <font>
+                                              <Font size="20.0" />
+                                          </font>
+                                      </Label>
+                                      <Separator opacity="0.0" orientation="VERTICAL" prefWidth="10.0" visible="false" />
+                                      <Label fx:id="minutsLabel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="0.0" text="00" HBox.hgrow="NEVER">
+                                          <font>
+                                              <Font size="20.0" />
+                                          </font>
+                                      </Label>
+                                      <Separator opacity="0.0" orientation="VERTICAL" prefWidth="5.0" visible="false" HBox.hgrow="NEVER" />
+                                      <Label fx:id="dosPuntsLabel" alignment="CENTER" text=":" HBox.hgrow="NEVER">
+                                          <font>
+                                              <Font size="20.0" />
+                                          </font>
+                                      </Label>
+                                      <Separator opacity="0.0" orientation="VERTICAL" prefWidth="5.0" visible="false" HBox.hgrow="NEVER" />
+                                      <Label fx:id="segonsLabel" alignment="CENTER" text="00" HBox.hgrow="NEVER">
+                                          <font>
+                                              <Font size="20.0" />
+                                          </font>
+                                      </Label>
+                                  </children>
+                                  <VBox.margin>
+                                      <Insets bottom="15.0" />
+                                  </VBox.margin>
+                              </HBox>
+                              <GridPane id="container_center" fx:id="graella" alignment="CENTER" hgap="5" vgap="5" VBox.vgrow="NEVER">
+                                  <BorderPane.margin>
+                                      <Insets />
+                                  </BorderPane.margin>
+                                  <columnConstraints>
+                                      <ColumnConstraints />
+                                  </columnConstraints>
+                                  <rowConstraints>
+                                      <RowConstraints />
+                                  </rowConstraints>
+                              </GridPane>
+                          </children>
+                      </VBox>
+               </children>
+               <columnConstraints>
+                  <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                  <ColumnConstraints hgrow="SOMETIMES" />
+                  <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints valignment="CENTER" vgrow="SOMETIMES" />
+               </rowConstraints>
+            </GridPane>
+         </center>
+         <right>
+            <VBox prefWidth="225.0" spacing="20.0" BorderPane.alignment="CENTER">
+               <children>
+                  <HBox id="pastilla-dificultat" fx:id="pastilla_dificultat" alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="60.0" prefWidth="225.0">
+                     <styleClass>
+                        <String fx:value="bloc-informacio" />
+                        <String fx:value="shadow" />
+                     </styleClass>
+                     <children>
+                        <Label fx:id="Label_dificultat" text="Nivell dificultat">
+                           <styleClass>
+                              <String fx:value="txt-white" />
+                              <String fx:value="h3" />
+                           </styleClass>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox id="fitxa-usuari" fx:id="ranking_usuari" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="80.0" prefWidth="225.0">
+                     <children>
+                        <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="70.0" prefWidth="70.0">
+                           <children>
+                              <ImageView id="avatar-usuari" fx:id="avatar_usuari" fitWidth="70.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/avatar.png" />
+                                 </image>
+                              </ImageView>
+                              <ImageView id="icona-mini-premi" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" translateX="35.0" translateY="35.0">
+                                 <image>
+                                    <Image url="@../../images/prize.png" />
+                                 </image>
+                              </ImageView>
+                              <Label fx:id="label_posicio" alignment="CENTER" prefHeight="22.0" prefWidth="22.0" styleClass="ranking-label-txt-posicio" text="99" textAlignment="CENTER" translateX="44.0" translateY="44.0" />
+                           </children>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                        </Pane>
+                        <VBox alignment="CENTER_LEFT" fillWidth="false" prefWidth="200.0">
+                           <children>
+                              <Label fx:id="label_nickname" text="Nickname Usuari">
+                                 <styleClass>
+                                    <String fx:value="ranking-label-txt" />
+                                    <String fx:value="txt-white" />
+                                 </styleClass>
+                              </Label>
+                              <HBox alignment="CENTER_LEFT">
+                                 <children>
+                                    <Label fx:id="label_puntuacio_usuari" text="12345">
+                                       <styleClass>
+                                          <String fx:value="ranking-label-txt-puntuacio" />
+                                          <String fx:value="txt-white" />
+                                       </styleClass>
+                                    </Label>
+                                    <Separator opacity="0.0" orientation="VERTICAL" prefWidth="10.0" />
+                                    <Label text="Pt.">
+                                       <styleClass>
+                                          <String fx:value="ranking-label-txt" />
+                                          <String fx:value="txt-white" />
+                                       </styleClass>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <styleClass>
+                        <String fx:value="block-ranking-usuari" />
+                        <String fx:value="bg-fosc" />
+                     </styleClass>
+                  </HBox>
+               </children>
+               <BorderPane.margin>
+                  <Insets left="20.0" right="30.0" />
+               </BorderPane.margin>
+            </VBox>
+         </right>
+         <left>
+            <VBox prefWidth="225.0" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets left="30.0" right="20.0" />
+               </BorderPane.margin>
+            </VBox>
+         </left>
+        </BorderPane>
+    </content>
+</ScrollPane>
