@@ -47,7 +47,7 @@ public class App extends Application {
         });
 
         } catch (IOException ex) {
-            logger.error("[ERROR] No s'ha pogut carregat la interfície d'usuari.");
+            logger.error("[ERROR] >> No s'ha pogut carregat la interfície d'usuari.");
         }
 
     }
