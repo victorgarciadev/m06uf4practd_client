@@ -8,14 +8,14 @@ public class Usuari {
     
     private int posicio;
     private String nickname;
-    private int punts;
+    private int puntuacio;
 
     public Usuari() {
     }
     public Usuari(int posicio, String nickname, int punts) {
         this.posicio = posicio;
         this.nickname = nickname;
-        this.punts = punts;
+        this.puntuacio = punts;
     }
 
     public int getPosicio() {
@@ -34,12 +34,12 @@ public class Usuari {
         this.nickname = nickname;
     }
 
-    public int getPunts() {
-        return punts;
+    public int getPuntuacio() {
+        return puntuacio;
     }
 
     public void setPunts(int punts) {
-        this.punts = punts;
+        this.puntuacio = punts;
     }
 
     

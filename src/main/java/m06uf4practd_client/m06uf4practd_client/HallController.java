@@ -15,7 +15,15 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import models.Usuari;
+import common.Lookups;
+import common.IUsuari;
+import common.Usuari;
+//import models.Usuari;
+//import common.UsuariException;
+import java.util.Collections;
+import java.util.Comparator;
+import javafx.scene.control.TableCell;
+import javax.naming.NamingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Utils;
@@ -48,10 +56,18 @@ public class HallController implements Initializable {
     @FXML
     private HBox titol, botonera, ranking_usuari;
 
-    // Recuperar Hall of Fame (Top 5 millors jugadors)
-    private ObservableList<Usuari> llistaObservablellistatTop5 = FXCollections.observableArrayList();
+    // Recuperar 'Hall of Fame' (Top 5 millors jugadors)
+    private ObservableList<Usuari> llistaTop5 = FXCollections.observableArrayList();
+    
+    // Definir la posició per la primera fila del llistat 'Hall of Fame' (Top 5 millors jugadors)
+    private int firstPosition = 0;
+
     @FXML
     private ScrollPane pagina;
+    
+    // 
+    static IUsuari ranking;
+    static Usuari usuari;
 
     /**
      * Inicialitza el controlador de la vista 'Hall'.
@@ -73,6 +89,7 @@ public class HallController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+        // *** BOTONS MENÚ ***
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
         btn_sortir.setOnAction(event -> {
@@ -80,48 +97,86 @@ public class HallController implements Initializable {
         });
 
         // Inicialitzar dades usuari
-        String nickname = "JavaDocPlus";  // TODO: recuperar-ho del servidor
+        String nickname = usuari.getNickname();
         String salutacio = "Hola, " + nickname + "!";
         label_salutacio.setText(salutacio);
         label_nickname.setText(nickname);
 
+        
         // *** COMPTADOR ***
         // TODO: verificar si hi ha partida activa, si és el primer en loguejar-se són 2 minuts d'espera, sinó 5
         tempsTotal = 7;
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "joc");
 
+        
         // *** HALL of FAME ***
         Label placeholder = new Label("Encara no hi ha campions/es");           // Especifico un texte d'ajuda per quan el llistat està buit
         tableView_top5.setPlaceholder(placeholder);
 
-        // TODO: llegir dades (Usuaris: posició, nickname, punts) del servidor
-        // DATA DEMO pel Top 5 (TableView)   ELIMINAR AL FINAL...
-        Usuari user1 = new Usuari(1, "Banana Joe", 99875);
-        Usuari user2 = new Usuari(2, "Marcia L.", 558);
-        Usuari user3 = new Usuari(3, "Kaleidoskopeo", 497);
-        Usuari user4 = new Usuari(4, "JavaDocPlus", 320);
-        Usuari user5 = new Usuari(5, "MaletaYelmo", 270);
+        // Llegir dades usuaris (posició, nickname, punts) del servidor
+        try {
+        
+            // Obtenir una instància remota de la classe 'UsuariEJB'
+            ranking = Lookups.usuariEJBRemoteLookup();
 
-        llistaObservablellistatTop5.add(user1);
-        llistaObservablellistatTop5.add(user2);
-        llistaObservablellistatTop5.add(user3);
-        llistaObservablellistatTop5.add(user4);
-        llistaObservablellistatTop5.add(user5);
-        // FI DATA DEMO
+            logger.info("Connexió correcta al servidor remot");
+        
+        } catch (NamingException ex) {
+            
+            logger.error("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+        }
+            
+//        try {            
+        
+            tableView_top5.getItems().clear();
+            llistaTop5.addAll(ranking.getUsuaris());
+
+            // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
+            Collections.sort(llistaTop5, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
+
+            tableView_top5.getItems().addAll(llistaTop5);            
+            logger.info("llistat d'usuaris correctament recuperat del servidor");
+            
+//            } catch (UsuariException ex) {
+//                logger.error("[ERROR] >> Error connectant amb tenda remota: " + ex + System.lineSeparator());
+//            } 
+        
 
         // Enllaçar columnes TableView amb propietats objecte Usuari
-        col_posicio.setCellValueFactory(new PropertyValueFactory<>("posicio"));
-        col_nickname.setCellValueFactory(new PropertyValueFactory<>("nickname"));
-        col_punts.setCellValueFactory(new PropertyValueFactory<>("punts"));
+        // Crear una cel·la personalitzada per la columna 'col_posicio' (llistar posicions de l'1 al 5)
+        col_posicio.setCellFactory(column -> {
+            return new TableCell<Usuari, Integer>() {
+                @Override
+                protected void updateItem(Integer item, boolean empty) {
+                    super.updateItem(item, empty);
 
+                    // Obtenir índex fila actual
+                    int index = getIndex();
+
+                    if (index >= 0 && index < 5) {
+                        // Assignar posició corresponent a la fila actual
+                        setText(String.valueOf(index + 1));
+                    } else {
+                        // No omplir la cel·la de les files següents
+                        setText(null);
+                    }
+                }
+            };
+        });
+        
+        col_nickname.setCellValueFactory(new PropertyValueFactory<>("nickname"));
+        col_punts.setCellValueFactory(new PropertyValueFactory<>("puntuacio"));
+
+        
         // Omplir llistat 'Hall of Fame'
-        tableView_top5.setItems(llistaObservablellistatTop5);
+        tableView_top5.setItems(llistaTop5);
 
         // Marcar usuari guanyador (si hi ha algú a la primera posició)
         tableView_top5.setRowFactory(tv -> {
             TableRow<Usuari> row = new TableRow<>();
             row.itemProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null && newVal.getPosicio() == 1) {
+        
+                if (newVal != null && row.getIndex() == firstPosition) {
                     row.getStyleClass().clear();
                     row.getStyleClass().addAll("guanyador", "txt-resaltat");
                 } else {
@@ -131,7 +186,7 @@ public class HallController implements Initializable {
             return row;
         });
         
-        // Mostrar/ocultar posició i puntuació usuari actual
+        // Mostrar/ocultar posició i puntuació de l'usuari actual
         mostrarRankingUsuari(nickname);
 
     }
@@ -152,8 +207,8 @@ public class HallController implements Initializable {
         final int targetIndexFinal = targetIndex;
 
         // Cercar l'índex de l'element amb el nickname de l'usuari dins el llistat Top 5
-        for (int i = 0; i < llistaObservablellistatTop5.size(); i++) {
-            if (llistaObservablellistatTop5.get(i).getNickname().equals(nickname)) {
+        for (int i = 0; i < llistaTop5.size(); i++) {
+            if (llistaTop5.get(i).getNickname().equals(nickname)) {
                 targetIndex = i;
                 break;
             }
@@ -165,17 +220,18 @@ public class HallController implements Initializable {
             ranking_usuari.setManaged(false);
 
             // Marcar la fila on es troba l'usuari per ressaltar-lo...
-            final int indexUsuari = targetIndex+1;
+            final int indexUsuari = targetIndex;
             tableView_top5.setRowFactory(tv -> {
                 TableRow<Usuari> row = new TableRow<>();
                 row.itemProperty().addListener((obs, oldVal, newVal) -> {
+                    
                     if (newVal != null) {
-                        if (newVal.getPosicio() == indexUsuari && newVal.getPosicio() > 1 ) {
+                        if (row.getIndex() == indexUsuari && row.getIndex() > firstPosition ) {
                             row.getStyleClass().addAll("usuari", "txt-clar");
                         } else {
                             row.getStyleClass().removeAll("usuari", "txt-clar");
                         } 
-                        if (newVal.getPosicio() == 1) {
+                        if (row.getIndex() == firstPosition) {
                             row.getStyleClass().addAll("guanyador", "txt-resaltat");
                         } else {
                             row.getStyleClass().removeAll("guanyador", "txt-resaltat");
@@ -192,7 +248,7 @@ public class HallController implements Initializable {
         }
 
         // Afegir un listener al llistat d'elements del TableView per detectar canvis
-        llistaObservablellistatTop5.addListener((ListChangeListener<Usuari>) canvi -> {
+        llistaTop5.addListener((ListChangeListener<Usuari>) canvi -> {
             while (canvi.next()) {
                 // Si hi ha canvis al llistat, torna a verificar si l'element es troba dins els primers 5 registres
                 if (targetIndexFinal != -1 && targetIndexFinal < 5) {

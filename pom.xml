@@ -1,14 +1,28 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>M06UF4PracTD_Client</groupId>
     <artifactId>M06UF4PracTD_Client</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <version.server.bom>26.1.0.Final</version.server.bom>
     </properties>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wildfly.bom</groupId>
+                <artifactId>wildfly-jakartaee8-with-tools</artifactId>
+                <version>${version.server.bom}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     
     <dependencies>
         <!-- Llibreria JavaFX -->
@@ -21,6 +35,22 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>13</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ejb-client-bom</artifactId>
+            <type>pom</type>
+            <scope>compile</scope>
+        </dependency>
+                
+        <dependency>
+            <groupId>Wordle_Server</groupId>
+            <artifactId>Wordle_Server</artifactId>
+            <version>${project.version}</version>
+            <!-- Amb aquesta configuració aconseguim que la referencia al JAR funcioni correctament  -->
+            <classifier>classes</classifier>
+            <type>ejb-client</type>
         </dependency>
         
         <!-- Enregistrador d’operacions (Logger) -->
@@ -36,10 +66,25 @@
             <artifactId>javafx-media</artifactId>
             <version>13</version>
         </dependency>
+        
+        <!-- javaEE -->
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <version>2.2</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>8.0</version>
+            <type>jar</type>
+        </dependency>
+        
     </dependencies>
     
     <build>
-         <!-- Indicar directori de recursos al classpath per utilitzar 'ClassLoader' per utilitzar recursos interns al projecte (àudio beep) -->
+        <!-- Indicar directori de recursos al classpath per utilitzar 'ClassLoader' per utilitzar recursos interns al projecte (àudio beep) -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -56,6 +101,7 @@
                     <release>11</release>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -93,11 +139,11 @@
                         <id>ide-profile</id>
                         <configuration>
                             <options>
-				<option>${profiler.jvmargs.arg1}</option>
-				<option>${profiler.jvmargs.arg2}</option>
-				<option>${profiler.jvmargs.arg3}</option>
-				<option>${profiler.jvmargs.arg4}</option>
-				<option>${profiler.jvmargs.arg5}</option>
+                                <option>${profiler.jvmargs.arg1}</option>
+                                <option>${profiler.jvmargs.arg2}</option>
+                                <option>${profiler.jvmargs.arg3}</option>
+                                <option>${profiler.jvmargs.arg4}</option>
+                                <option>${profiler.jvmargs.arg5}</option>
                             </options>
                         </configuration>
                     </execution>
@@ -105,4 +151,5 @@
             </plugin>
         </plugins>
     </build>
+    <name>M06UF4PracTD_Client</name>
 </project>
