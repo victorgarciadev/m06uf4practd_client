@@ -97,7 +97,8 @@ public class HallController implements Initializable {
         });
 
         // Inicialitzar dades usuari
-        String nickname = usuari.getNickname();
+        //String nickname = usuari.getNickname();
+        String nickname = "Txell";
         String salutacio = "Hola, " + nickname + "!";
         label_salutacio.setText(salutacio);
         label_nickname.setText(nickname);
