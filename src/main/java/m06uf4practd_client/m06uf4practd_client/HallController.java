@@ -17,11 +17,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import common.Lookups;
 import common.IUsuari;
+import common.PartidaException;
 import common.Usuari;
 //import models.Usuari;
 //import common.UsuariException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.logging.Level;
 import javafx.scene.control.TableCell;
 import javax.naming.NamingException;
 import org.apache.logging.log4j.LogManager;
@@ -130,7 +132,11 @@ public class HallController implements Initializable {
 //        try {            
         
             tableView_top5.getItems().clear();
+        try {
             llistaTop5.addAll(ranking.getUsuaris());
+        } catch (PartidaException ex) {
+            java.util.logging.Logger.getLogger(HallController.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
             // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
             Collections.sort(llistaTop5, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
