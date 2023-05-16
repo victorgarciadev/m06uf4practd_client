@@ -33,7 +33,8 @@ public class App extends Application {
         try {
 
             // Propietats de la finestra
-            scene = new Scene(loadFXML("hall"), 850, 760);
+            //scene = new Scene(loadFXML("hall"), 850, 760);
+            scene = new Scene(loadFXML("joc"), 850, 760);
             stage.setScene(scene);
             stage.setTitle(TITOL_JOC);
             stage.setMinWidth(640);
