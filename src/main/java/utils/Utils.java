@@ -149,7 +149,7 @@ public class Utils {
 
         // Carregar l'escena d'ajuda des de l'arxiu FXML especificat
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("help.fxml"));
-        FXMLLoader loader = new FXMLLoader(Utils.class.getResource("../primary.fxml"));
+        FXMLLoader loader = new FXMLLoader(Utils.class.getResource("../instruccions.fxml"));
         Parent root = null;
         try {
 
