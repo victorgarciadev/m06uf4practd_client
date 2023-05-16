@@ -144,34 +144,32 @@ public class Utils {
      *
      * @author Txell Llanas
      */
-    @FXML
+    //@FXML
     public static void mostrarAjuda(Button boto) {
-
-        // Carregar l'escena d'ajuda des de l'arxiu FXML especificat
-        //FXMLLoader loader = new FXMLLoader(getClass().getResource("help.fxml"));
-        FXMLLoader loader = new FXMLLoader(Utils.class.getResource("../instruccions.fxml"));
-        Parent root = null;
+        
         try {
+            
+            FXMLLoader loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/instruccions.fxml"));
+            Parent root = loader.load();
+            
+            // Crear una nova finestra de tipus modal
+            Stage helpStage = new Stage();
+            helpStage.initModality(Modality.APPLICATION_MODAL);
+            helpStage.initOwner(boto.getScene().getWindow());
+            helpStage.setTitle("Instruccions del joc");
+            
+            // Carregar l'escena dins la nova finestra
+            Scene scene = new Scene(root);
+            helpStage.setScene(scene);
+            
+            // Mostrar vista d''ajuda
+            helpStage.showAndWait();
+            
+        }catch (IOException ex) {
 
-            root = loader.load();
-
-        } catch (IOException ex) {
-
-            logger.error("[ERROR] No s'ha pogut carregat la la pantalla d'ajuda: " + ex.getMessage());
+            logger.error("[ERROR] No s'ha pogut carregar la pantalla d'ajuda: " + ex.getMessage());
 
         }
-
-        // Crear un nou Stage i carregar-hi l'escena d'ajuda (Instruccions del joc)
-        Stage helpStage = new Stage();
-        helpStage.setScene(new Scene(root));
-
-        // Establir propietats del nou Stage perquè es mostri com un diàleg
-        helpStage.initModality(Modality.APPLICATION_MODAL);
-        helpStage.initOwner(boto.getScene().getWindow());
-        helpStage.setTitle("Instruccions del joc");
-
-        // Mostrar el nou Stage (Instruccions del joc)
-        helpStage.showAndWait();
 
     }
 
@@ -230,9 +228,9 @@ public class Utils {
         // Carregar l'escena amb l'arxiu FXML especificat
         FXMLLoader loader = null;
         if( resultat.equals("guanya") ){
-            loader = new FXMLLoader(Utils.class.getResource("toastGuanya.fxml"));
+            loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/toastGuanya.fxml"));
         } else if( resultat.equals("perd") ) {
-            loader = new FXMLLoader(Utils.class.getResource("toastPerd.fxml"));
+            loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/toastPerd.fxml"));
         }
         Parent root = null;
         try {

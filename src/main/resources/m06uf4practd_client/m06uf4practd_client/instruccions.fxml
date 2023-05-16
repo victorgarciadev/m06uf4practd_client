@@ -4,23 +4,23 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefWidth="500.0" spacing="20.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="500.0" spacing="20.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
    <children>
       <Label styleClass="h1" text="Instruccions del joc" />
-      <TextArea fx:id="instruccionsJoc" editable="false" style="-fx-background-color: none;" text="Les normes són senzilles: Endevina la paraula oculta en 6 intents. Cada intent ha de ser una paraula vàlida i si la paraula no existeix, el joc t'avisarà. Despres de cada intent, el color de les caselles cambia." wrapText="true" />
+      <Label fx:id="instruccions" styleClass="h3" text="Normes del joc" textAlignment="CENTER" wrapText="true" />
       <HBox alignment="CENTER_LEFT">
          <children>
             <Label text="V">
                <styleClass>
                   <String fx:value="casella" />
                   <String fx:value="casella-verda" />
-               </styleClass></Label>
+               </styleClass>
+            </Label>
             <Separator orientation="VERTICAL" prefWidth="20.0" visible="false" />
-            <Label fx:id="descripcioVerd" text="Descripcio color" />
+            <Label fx:id="descripcioVerd" text="Descripcio color" wrapText="true" />
          </children>
       </HBox>
       <HBox alignment="CENTER_LEFT">
@@ -29,9 +29,10 @@
                <styleClass>
                   <String fx:value="casella" />
                   <String fx:value="casella-taronja" />
-               </styleClass></Label>
+               </styleClass>
+            </Label>
             <Separator orientation="VERTICAL" prefWidth="20.0" visible="false" />
-            <Label fx:id="descripcioTaronja" text="Descripcio color" />
+            <Label fx:id="descripcioTaronja" text="Descripcio color" wrapText="true" />
          </children>
       </HBox>
       <HBox alignment="CENTER_LEFT">
@@ -40,13 +41,14 @@
                <styleClass>
                   <String fx:value="casella" />
                   <String fx:value="casella-grisa" />
-               </styleClass></Label>
+               </styleClass>
+            </Label>
             <Separator orientation="VERTICAL" prefWidth="20.0" visible="false" />
-            <Label fx:id="descripcioGris" text="Descripcio color" />
+            <Label fx:id="descripcioGris" text="Descripcio color" wrapText="true" />
          </children>
       </HBox>
    </children>
    <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
    </padding>
 </VBox>
