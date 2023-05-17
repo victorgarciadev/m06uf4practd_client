@@ -49,6 +49,7 @@ public class JocController implements Initializable {
     private int COLUMNA_ACTUAL = 1;
     public static final ArrayList<String> winningWords = new ArrayList<>();
     private String winningWord;
+    private boolean graellaDesactivada = false;
 
     // Teclat
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
@@ -158,13 +159,7 @@ public class JocController implements Initializable {
 
             aplicarEstilTeclaApretada(label);
 
-            // Agrega el controlador de eventos al botón
-            label.setOnMouseClicked(event -> {
-                // Lógica para manejar el evento del botón pulsado
-                String letraPulsada = label.getText();
-                // Llama a un método o realiza las acciones que deseas con la letra pulsada
-                procesarLletraPulsada(letraPulsada);
-            });
+            eventsTeclat(label);
         }
 
         for (int i = 0; i < secondRowLetters.length; i++) {
@@ -175,13 +170,7 @@ public class JocController implements Initializable {
 
             aplicarEstilTeclaApretada(label);
 
-            // Agrega el controlador de eventos al botón
-            label.setOnMouseClicked(event -> {
-                // Lógica para manejar el evento del botón pulsado
-                String letraPulsada = label.getText();
-                // Llama a un método o realiza las acciones que deseas con la letra pulsada
-                procesarLletraPulsada(letraPulsada);
-            });
+            eventsTeclat(label);
         }
 
         for (int i = 0; i < thirdRowLetters.length; i++) {
@@ -199,112 +188,201 @@ public class JocController implements Initializable {
 
             aplicarEstilTeclaApretada(label);
 
-            // Agrega el controlador de eventos al botón
-            label.setOnMouseClicked(event -> {
-                // Lógica para manejar el evento del botón pulsado
-                String letraPulsada = label.getText();
-                // Llama a un método o realiza las acciones que deseas con la letra pulsada
-                procesarLletraPulsada(letraPulsada);
-            });
+            eventsTeclat(label);
         }
 
     }
 
-    private void procesarLletraPulsada(String letra) {  
-        String filaActualTexto = "";
-      
-        if (letra.equals("←")) {
-            if ((COLUMNA_ACTUAL < (columnes))) {
-                retrocederPosicion();
-                borrarCasillaActual();
+    /**
+     * Mètode per gestionar els esdeveniments de les tecles del teclat.
+     *
+     * @param label L'etiqueta (tecla) a la qual s'associa l'esdeveniment.
+     * @author Víctor García
+     */
+    private void eventsTeclat(Label label) {
+        // Listener per a quan l'usuari prem una tecla del teclat
+        label.setOnMouseClicked(event -> {
+            String lletraPolsada = label.getText();
+            if (graellaDesactivada) {
+                return; // Si la graella està plena, s'inhabilita el teclat
             } else {
-                Node nodoEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-                if (nodoEtiqueta instanceof Label) {
-                    Label etiqueta = (Label) nodoEtiqueta;
-                    String textoCasilla = etiqueta.getText();
-                    if (!textoCasilla.isEmpty()) {
-                        // Agregar la letra al String filaActualTexto
-                        borrarCasillaActual();
+                if (!esFinal() || lletraPolsada.equals("←") || lletraPolsada.equals("ENVIAR")) {
+                    procesarLletraPolsada(lletraPolsada);
+                }
+            }
+        });
+    }
+
+    /**
+     * Mètode per indicar que la graella està completa i desactivar el teclat.
+     *
+     * @author Víctor García
+     */
+    private void graellaCompleta() {
+        graellaDesactivada = true;
+    }
+
+    /**
+     * Verifica si la posició actual a la graella és la posició final.
+     *
+     * @return `true` si la posició actual és la posició final i conté text,
+     * sinó `false`.
+     * @author Víctor García
+     */
+    private boolean esFinal() {
+        Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+        if (nodeEtiqueta instanceof Label) {
+            Label etiqueta = (Label) nodeEtiqueta;
+            String text = etiqueta.getText();
+
+            if (COLUMNA_ACTUAL == (columnes) && FILA_ACTUAL == FILES && !text.isEmpty() && !text.isBlank()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Processa la lletra premuda en el teclat i realitza les accions
+     * corresponents.
+     *
+     * @param lletra La lletra premuda en el teclat.
+     * @author Víctor García
+     */
+    private void procesarLletraPolsada(String lletra) {
+        String filaActualText = "";
+
+        if (graellaDesactivada) {
+            return; // Comprovem si la graella està plena
+        }
+
+        if (lletra.equals("←")) {
+            if ((COLUMNA_ACTUAL < (columnes))) {
+                retrocedirPosicio();
+                esborrarCasellaActual();
+            } else {
+                Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+                if (nodeEtiqueta instanceof Label) {
+                    Label etiqueta = (Label) nodeEtiqueta;
+                    String textCasella = etiqueta.getText();
+                    if (!textCasella.isEmpty()) {
+                        esborrarCasellaActual();
                     } else {
-                        retrocederPosicion();
-                        borrarCasillaActual();
+                        retrocedirPosicio();
+                        esborrarCasellaActual();
                     }
                 }
             }
-        } else if (letra.equals("ENVIAR")) { //&& COLUMNA_ACTUAL == columnes
-            System.out.println("ENVIAR");
-            // Comprobar si estamos en la última posición de la fila
-            System.out.println("COLUMNA ACTUAL --> " + COLUMNA_ACTUAL);
-            System.out.println("COLUMNES ---> " + columnes);
-            if (COLUMNA_ACTUAL == (columnes)) {
-                filaActualTexto = obtenerTextoFilaActual();
-                System.out.println("Texto de la fila actual: " + filaActualTexto);
-                // Realizar la acción de enviar
+        } else if (lletra.equals("ENVIAR")) {
+            boolean hasText = false;
 
-                FILA_ACTUAL++;
-                COLUMNA_ACTUAL = 1;
+            Node nodeEtiquetaa = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+            if (nodeEtiquetaa instanceof Label) {
+                Label etiquetaa = (Label) nodeEtiquetaa;
+                String text = etiquetaa.getText();
+
+                if (!text.isEmpty() || !text.isBlank()) {
+                    hasText = true;
+                }
+            }
+
+            if (COLUMNA_ACTUAL == columnes && hasText) {
+                filaActualText = obtenirTextFilaActual();
+
+                if (!(FILA_ACTUAL == FILES)) {
+                    FILA_ACTUAL++;
+                    COLUMNA_ACTUAL = 1;
+                } else {
+                    graellaCompleta();
+                }
+
             } else {
-                Node nodoEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-                if (nodoEtiqueta instanceof Label) {
-                    Label etiqueta = (Label) nodoEtiqueta;
-                    String textoCasilla = etiqueta.getText();
-                    if (!textoCasilla.isEmpty()) {
-                        // Agregar la letra al String filaActualTexto
-                        filaActualTexto += textoCasilla;
+                Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+
+                if (nodeEtiqueta instanceof Label) {
+                    Label etiqueta = (Label) nodeEtiqueta;
+                    String textCasella = etiqueta.getText();
+
+                    if (!textCasella.isEmpty()) {
+                        // Agreguem la lletra a la fila actual
+                        filaActualText += textCasella;
                     }
                 }
             }
         } else {
-            System.out.println("OTRO");
-            System.out.println("COLUMNA ACTUAL --> " + COLUMNA_ACTUAL);
-            System.out.println("COLUMNES ---> " + columnes);
-
-            Node nodoEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-            if (nodoEtiqueta instanceof Label) {
-                Label etiqueta = (Label) nodoEtiqueta;
-                etiqueta.setText(letra);
+            Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+            if (nodeEtiqueta instanceof Label) {
+                Label etiqueta = (Label) nodeEtiqueta;
+                etiqueta.setText(lletra);
             }
 
+            // Actualitzem la posició de la graella només si no som a l'última fila
             if ((COLUMNA_ACTUAL < (columnes))) {
-                // Actualizar la posición actual en la grilla solo si no estamos en la última posición
                 COLUMNA_ACTUAL++;
             }
+
         }
     }
 
-    private String obtenerTextoFilaActual() {
-        StringBuilder textoFila = new StringBuilder();
-        int filaInicio = (FILA_ACTUAL - 1) * columnes;
-        int filaFin = filaInicio + columnes;
+    /**
+     * Obté el text de la fila actual de la graella.
+     *
+     * @return El text de la fila actual de la graella.
+     * @author Víctor García
+     */
+    private String obtenirTextFilaActual() {
+        StringBuilder textFila = new StringBuilder();
+        int filaInici = (FILA_ACTUAL - 1) * columnes;
+        int filaFinal = filaInici + columnes;
 
-        for (int i = filaInicio; i < filaFin; i++) {
+        for (int i = filaInici; i < filaFinal; i++) {
             Node nodoEtiqueta = graella.getChildren().get(i);
             if (nodoEtiqueta instanceof Label) {
                 Label etiqueta = (Label) nodoEtiqueta;
                 String textoCasilla = etiqueta.getText();
-                textoFila.append(textoCasilla);
+                textFila.append(textoCasilla);
             }
         }
 
-        return textoFila.toString();
+        return textFila.toString();
     }
 
-    private void borrarCasillaActual() {
-        Node nodoEtiquetaActual = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-        if (nodoEtiquetaActual instanceof Label) {
-            Label etiquetaActual = (Label) nodoEtiquetaActual;
-            if (!etiquetaActual.getText().isEmpty()) {
-                etiquetaActual.setText("");
+    /**
+     * Esborra el contingut de la casella actual de la graella.
+     *
+     * Aquest mètode esborra el text de la casella actual de la graella, sempre
+     * i quan la graella no estigui desactivada.
+     *
+     * @author Víctor García
+     */
+    private void esborrarCasellaActual() {
+        if (!graellaDesactivada) {
+            Node nodeEtiquetaActual = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+            if (nodeEtiquetaActual instanceof Label) {
+                Label etiquetaActual = (Label) nodeEtiquetaActual;
+                if (!etiquetaActual.getText().isEmpty()) {
+                    etiquetaActual.setText("");
+                }
             }
         }
     }
 
-    private void retrocederPosicion() {
+    /**
+     * Retrocedeix la posició a la columna anterior de la graella.
+     *
+     * Aquest mètode decrementa la columna actual en 1, sempre i quan la columna
+     * actual sigui major que 1. S'utilitza per retrocedir a la casella anterior
+     * quan l'usuari prem la tecla "←" en el teclat.
+     *
+     * @author Víctor García
+     */
+    private void retrocedirPosicio() {
         if (COLUMNA_ACTUAL > 1) {
             COLUMNA_ACTUAL--;
         }
     }
-    
+
     /**
      * Mètode per definir l'estil d'una tecla clicada amb el ratolí.
      *
