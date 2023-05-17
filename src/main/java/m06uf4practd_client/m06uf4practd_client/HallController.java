@@ -1,5 +1,6 @@
 package m06uf4practd_client.m06uf4practd_client;
 
+import common.IPartida;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
@@ -17,11 +18,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import common.Lookups;
 import common.IUsuari;
+import common.PartidaException;
 import common.Usuari;
 //import models.Usuari;
 //import common.UsuariException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.logging.Level;
 import javafx.scene.control.TableCell;
 import javax.naming.NamingException;
 import org.apache.logging.log4j.LogManager;
@@ -58,15 +61,16 @@ public class HallController implements Initializable {
 
     // Recuperar 'Hall of Fame' (Top 5 millors jugadors)
     private ObservableList<Usuari> llistaTop5 = FXCollections.observableArrayList();
-    
+
     // Definir la posició per la primera fila del llistat 'Hall of Fame' (Top 5 millors jugadors)
     private int firstPosition = 0;
 
     @FXML
     private ScrollPane pagina;
-    
+
     // 
     static IUsuari ranking;
+    static IPartida partida;
     static Usuari usuari;
 
     /**
@@ -89,6 +93,20 @@ public class HallController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+        // Llegir dades usuaris (posició, nickname, punts) del servidor
+        try {
+
+            // Obtenir una instància remota de la classe 'UsuariEJB'
+            ranking = Lookups.usuariEJBRemoteLookup();
+            partida = Lookups.partidaEJBRemoteLookup();
+
+            logger.info("Connexió correcta al servidor remot");
+
+        } catch (NamingException ex) {
+
+            logger.error("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+        }
+
         // *** BOTONS MENÚ ***
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
@@ -103,46 +121,33 @@ public class HallController implements Initializable {
         label_salutacio.setText(salutacio);
         label_nickname.setText(nickname);
 
-        
         // *** COMPTADOR ***
         // TODO: verificar si hi ha partida activa, si és el primer en loguejar-se són 2 minuts d'espera, sinó 5
-        tempsTotal = 7;
+        tempsTotal = partida.timeRemaining();
+        System.out.println(">>>> Temps d'espera --> " + tempsTotal);
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "joc");
 
-        
         // *** HALL of FAME ***
         Label placeholder = new Label("Encara no hi ha campions/es");           // Especifico un texte d'ajuda per quan el llistat està buit
         tableView_top5.setPlaceholder(placeholder);
 
-        // Llegir dades usuaris (posició, nickname, punts) del servidor
-        try {
-        
-            // Obtenir una instància remota de la classe 'UsuariEJB'
-            ranking = Lookups.usuariEJBRemoteLookup();
-
-            logger.info("Connexió correcta al servidor remot");
-        
-        } catch (NamingException ex) {
-            
-            logger.error("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
-        }
-            
 //        try {            
-        
-            tableView_top5.getItems().clear();
+        tableView_top5.getItems().clear();
+        try {
             llistaTop5.addAll(ranking.getUsuaris());
+        } catch (PartidaException ex) {
+            java.util.logging.Logger.getLogger(HallController.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
-            // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
-            Collections.sort(llistaTop5, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
+        // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
+        Collections.sort(llistaTop5, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
 
-            tableView_top5.getItems().addAll(llistaTop5);            
-            logger.info("llistat d'usuaris correctament recuperat del servidor");
-            
+        tableView_top5.getItems().addAll(llistaTop5);
+        logger.info("llistat d'usuaris correctament recuperat del servidor");
+
 //            } catch (UsuariException ex) {
 //                logger.error("[ERROR] >> Error connectant amb tenda remota: " + ex + System.lineSeparator());
 //            } 
-        
-
         // Enllaçar columnes TableView amb propietats objecte Usuari
         // Crear una cel·la personalitzada per la columna 'col_posicio' (llistar posicions de l'1 al 5)
         col_posicio.setCellFactory(column -> {
@@ -164,11 +169,10 @@ public class HallController implements Initializable {
                 }
             };
         });
-        
+
         col_nickname.setCellValueFactory(new PropertyValueFactory<>("nickname"));
         col_punts.setCellValueFactory(new PropertyValueFactory<>("puntuacio"));
 
-        
         // Omplir llistat 'Hall of Fame'
         tableView_top5.setItems(llistaTop5);
 
@@ -176,7 +180,7 @@ public class HallController implements Initializable {
         tableView_top5.setRowFactory(tv -> {
             TableRow<Usuari> row = new TableRow<>();
             row.itemProperty().addListener((obs, oldVal, newVal) -> {
-        
+
                 if (newVal != null && row.getIndex() == firstPosition) {
                     row.getStyleClass().clear();
                     row.getStyleClass().addAll("guanyador", "txt-resaltat");
@@ -186,7 +190,7 @@ public class HallController implements Initializable {
             });
             return row;
         });
-        
+
         // Mostrar/ocultar posició i puntuació de l'usuari actual
         mostrarRankingUsuari(nickname);
 
@@ -225,18 +229,18 @@ public class HallController implements Initializable {
             tableView_top5.setRowFactory(tv -> {
                 TableRow<Usuari> row = new TableRow<>();
                 row.itemProperty().addListener((obs, oldVal, newVal) -> {
-                    
+
                     if (newVal != null) {
-                        if (row.getIndex() == indexUsuari && row.getIndex() > firstPosition ) {
+                        if (row.getIndex() == indexUsuari && row.getIndex() > firstPosition) {
                             row.getStyleClass().addAll("usuari", "txt-clar");
                         } else {
                             row.getStyleClass().removeAll("usuari", "txt-clar");
-                        } 
+                        }
                         if (row.getIndex() == firstPosition) {
                             row.getStyleClass().addAll("guanyador", "txt-resaltat");
                         } else {
                             row.getStyleClass().removeAll("guanyador", "txt-resaltat");
-                        } 
+                        }
                     }
                 });
                 return row;
