@@ -92,7 +92,6 @@ public class JocController implements Initializable {
             System.out.println("Connexió correcta al servidor remot");
 
         } catch (NamingException ex) {
-
             System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
         }
 
@@ -103,9 +102,9 @@ public class JocController implements Initializable {
         try {
             
             llistaUsuaris.addAll(usuari.getUsuaris());
+            log.log(Level.INFO, ">> [INFO] Llistat d'usuaris recuperat correctament del servidor");
             
-        } catch (PartidaException ex) {
-            
+        } catch (PartidaException ex) {            
             log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
             
         }
@@ -130,12 +129,8 @@ public class JocController implements Initializable {
             } else {
                 label_posicio.setVisible(false);
                 icona_posicio.setVisible(false);
-
-                log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha puntuacions.");
             }
         }
-
-        log.log(Level.INFO, ">> [INFO] Llistat d'usuaris correctament recuperat del servidor");
 
         // Actualitzar Labels UI
         label_nickname.setText(nickname);
