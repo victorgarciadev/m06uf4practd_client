@@ -130,7 +130,7 @@ public class HallController implements Initializable {
         
         // Inicialitzar dades usuari
         //String email = "";  // TO DO (Izan): passar email usuari registrat a dins d'aquesta vista (hall.fxml)
-        String email = "txell@mail.com";  // variable transitòria... eliminar quan es passi mail de l'usuari registrat
+        String email = LoginController.idSessio;  // variable transitòria... eliminar quan es passi mail de l'usuari registrat
         String nickname = usuari.getUsuari(email).getNickname();
         String salutacio = "Hola, " + nickname + "!";
         label_salutacio.setText(salutacio);

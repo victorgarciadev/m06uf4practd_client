@@ -8,6 +8,7 @@ import common.IUsuari;
 import common.Lookups;
 import common.PartidaException;
 import common.Usuari;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -40,7 +41,7 @@ public class LoginController implements Initializable {
 
     static IUsuari usuari;
 
-    String idSessio = null;
+    public static String idSessio = null;
 
     /**
      * Initializes the controller class.
@@ -84,7 +85,16 @@ public class LoginController implements Initializable {
             logger.info("Error iniciant sessió: " + System.lineSeparator() + ex);
             showALerta("Error iniciant sessió");
         }
-        logger.info(">>>>>>>"+idSessio);
+        logger.info(">>>>>>>" + idSessio);
+        try {
+            if (idSessio != null) {
+                App.setRoot("hall");
+            }
+
+        } catch (IOException ex) {
+            logger.info(ex);
+            showALerta("No es pot carregar el HALL");
+        }
     }
 
     public void showALerta(String msg) {
