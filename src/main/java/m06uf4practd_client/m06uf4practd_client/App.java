@@ -23,12 +23,9 @@ public class App extends Application {
     private static final Logger logger = LogManager.getLogger(App.class);
     private static Scene scene;
     private static final String TITOL_JOC = "Benvinguts a Wordle Online!";
-    private static Stage stageReference;
     
     @Override
     public void start(Stage stage) {
-        
-        stageReference = stage;
 
         try {
 
