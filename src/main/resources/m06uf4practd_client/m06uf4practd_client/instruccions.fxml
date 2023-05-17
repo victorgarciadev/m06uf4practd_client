@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="500.0" spacing="20.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
+<VBox alignment="CENTER" maxHeight="500.0" maxWidth="500.0" minHeight="500.0" minWidth="500.0" prefHeight="500.0" prefWidth="500.0" spacing="20.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
    <children>
       <Label styleClass="h1" text="Instruccions del joc" />
       <Label fx:id="instruccions" styleClass="h3" text="Normes del joc" textAlignment="CENTER" wrapText="true" />
