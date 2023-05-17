@@ -144,28 +144,27 @@ public class HallController implements Initializable {
                     tableView_top5.getItems().add(llistaTop5.get(i));
                 }
             }
-            
+
+            // Localitzar posició usuari actual dins del ranking
+            for (int i = 0; i < llistaTop5.size(); i++)
+            {
+                // Desar posició si es tenen punts
+                if ( llistaTop5.get(i).getNickname().equals(nickname) && llistaTop5.get(i).getPuntuacio() > 0 )
+                {
+                    posicio = i+1;                        
+                    label_posicio.setVisible(true);
+                    icona_posicio.setVisible(true);
+                    break; // Parem la iteració, ja que hem localitzat l'usuari
+
+                } else {
+                    label_posicio.setVisible(false);
+                    icona_posicio.setVisible(false);
+                }
+            }
+
             if ( !tableView_top5.getItems().isEmpty() )
             {
-                // Localitzar posició usuari actual dins del ranking
-                for (int i = 0; i < llistaTop5.size(); i++)
-                {
-                    // Desar posició si es tenen punts
-                    if ( llistaTop5.get(i).getNickname().equals(nickname) && llistaTop5.get(i).getPuntuacio() > 0 )
-                    {
-                        posicio = i+1;                        
-                        label_posicio.setVisible(true);
-                        icona_posicio.setVisible(true);
-                        break; // Parem la iteració, ja que hem localitzat l'usuari
-                        
-                    } else {
-                        label_posicio.setVisible(false);
-                        icona_posicio.setVisible(false);
-                    }
-                }
-                
                 log.log(Level.INFO, ">> [INFO] Llistat d'usuaris correctament recuperat del servidor");
-                
             } else {
                 log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha usuaris amb puntuacions.");
             }
