@@ -67,9 +67,8 @@ public class HallController implements Initializable {
     @FXML
     private ScrollPane pagina;
 
-    // 
+    // Recuperar usuari(s)
     static IUsuari usuari;
-    //static Usuari usuari;
 
     /**
      * Inicialitza el controlador de la vista 'Hall'.
@@ -100,7 +99,7 @@ public class HallController implements Initializable {
 
         // *** COMPTADOR ***
         // TODO: verificar si hi ha partida activa, si és el primer en loguejar-se són 2 minuts d'espera, sinó 5
-        tempsTotal = 7;
+        tempsTotal = 10;
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "joc");
 
         // *** HALL of FAME ***
@@ -122,30 +121,51 @@ public class HallController implements Initializable {
           
         tableView_top5.getItems().clear();
         try {
+            
             llistaTop5.addAll(usuari.getUsuaris());
+            
         } catch (PartidaException ex) {
+            
             java.util.logging.Logger.getLogger(HallController.class.getName()).log(Level.SEVERE, null, ex);
+            
         }
-
         
-        // Inicialitzar dades usuari
-        //String email = "";  // TO DO (Izan): passar email usuari registrat a dins d'aquesta vista (hall.fxml)
-        String email = "txell@mail.com";  // variable transitòria... eliminar quan es passi mail de l'usuari registrat
-        String nickname = usuari.getUsuari(email).getNickname();
-        String salutacio = "Hola, " + nickname + "!";
-        label_salutacio.setText(salutacio);
-        label_nickname.setText(nickname);
-
         
+        // *** DADES USUARI ***
         // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
         Collections.sort(llistaTop5, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
 
         tableView_top5.getItems().addAll(llistaTop5);
         logger.info("llistat d'usuaris correctament recuperat del servidor");
+        
+        //String email = "";  // TO DO (Izan): passar email usuari registrat a dins d'aquesta vista (hall.fxml)
+        String email = "Sarayyy@mail.com";  // variable transitòria... eliminar quan es passi mail de l'usuari registrat
+        String nickname = usuari.getUsuari(email).getNickname();
+        String salutacio = "Hola, " + nickname + "!";
+        
+        // Localitzar posició usuari actual dins del ranking
+        int posicio = -1;
+        for (int i = 0; i < llistaTop5.size(); i++) {
+            
+            if (llistaTop5.get(i).getNickname().equals(nickname))
+            {
+                posicio = i+1;
+                break; // Parem la iteració, ja que hem localitzat l'usuari
+            }
+        }
+        
+        // Actualitzar Labels UI
+        label_salutacio.setText(salutacio);
+        label_nickname.setText(nickname);
+        label_puntuacio_usuari.setText(String.valueOf(usuari.getUsuari(email).getPuntuacio()));
+        label_posicio.setText(String.valueOf(posicio));
+        
 
         
         // Enllaçar columnes TableView amb propietats objecte Usuari
-        // Crear una cel·la personalitzada per la columna 'col_posicio' (llistar posicions de l'1 al 5)
+        /** Crear una cel·la personalitzada per la columna 'col_posicio' 
+         *  (llistar posicions de l'1 al 5)
+         */
         col_posicio.setCellFactory(column -> {
             return new TableCell<Usuari, Integer>() {
                 @Override
@@ -157,7 +177,7 @@ public class HallController implements Initializable {
 
                     if (index >= 0 && index < 5) {
                         // Assignar posició corresponent a la fila actual
-                        setText(String.valueOf(index + 1));
+                        setText(String.valueOf(index+1));
                     } else {
                         // No omplir la cel·la de les files següents
                         setText(null);
@@ -190,10 +210,6 @@ public class HallController implements Initializable {
         // Mostrar/ocultar posició i puntuació de l'usuari actual
         mostrarRankingUsuari(nickname);
 
-    }
-
-    public void setUserModel(IUsuari usuari) {
-        this.usuari = usuari;
     }
 
     /**
