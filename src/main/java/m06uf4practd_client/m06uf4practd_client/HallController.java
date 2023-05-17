@@ -138,8 +138,7 @@ public class HallController implements Initializable {
         tableView_top5.getItems().addAll(llistaTop5);
         logger.info("llistat d'usuaris correctament recuperat del servidor");
         
-        //String email = "";  // TO DO (Izan): passar email usuari registrat a dins d'aquesta vista (hall.fxml)
-        String email = "Sarayyy@mail.com";  // variable transitòria... eliminar quan es passi mail de l'usuari registrat
+        String email = LoginController.idSessio;
         String nickname = usuari.getUsuari(email).getNickname();
         String salutacio = "Hola, " + nickname + "!";
         
