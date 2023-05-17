@@ -284,7 +284,7 @@ public class JocController implements Initializable {
             }
         });
     }
-    
+
     /**
      * Mètode per indicar que la graella està completa i desactivar el teclat.
      *
