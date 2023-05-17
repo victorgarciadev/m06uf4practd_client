@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -32,6 +33,7 @@ import utils.Utils;
  */
 public class JocController implements Initializable {
 
+    private static final Logger log = Logger.getLogger(JocController.class.getName());
     Utils util = new Utils();
 
     @FXML
@@ -43,7 +45,7 @@ public class JocController implements Initializable {
     @FXML
     private GridPane graella, teclatFila1, teclatFila2, teclatFila3;
     @FXML
-    private ImageView avatar_usuari;
+    private ImageView avatar_usuari, icona_posicio;
     @FXML
     private Label minutsLabel, segonsLabel, dosPuntsLabel, label_posicio, label_nickname,
             label_puntuacio_usuari, Label_dificultat;
@@ -62,13 +64,12 @@ public class JocController implements Initializable {
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
     private final String[] secondRowLetters = {"A", "S", "D", "F", "G", "H", "J", "K", "L"};
     private final String[] thirdRowLetters = {"ENVIAR", "Z", "X", "C", "V", "B", "N", "M", "←"};
-    
+
     // Recuperar usuari(s)
     static IUsuari usuari;
-    
+
     // Recuperar 'Hall of Fame' (Top 5 millors jugadors)
     private ObservableList<Usuari> llistaUsuaris = FXCollections.observableArrayList();
-    
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -78,7 +79,7 @@ public class JocController implements Initializable {
         btn_sortir.setOnAction(event -> {
             Utils.sortir();
         });
-        
+
         
         
         // * * * *  DADES USUARI(S)  * * * *
@@ -93,47 +94,59 @@ public class JocController implements Initializable {
         } catch (NamingException ex) {
 
             System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
-        }          
+        }
+
+        // Resetejar llistat
+        llistaUsuaris.clear();
         
+        // Recuperar usuaris del servidor (Actualitzar dades)
         try {
             
             llistaUsuaris.addAll(usuari.getUsuaris());
             
         } catch (PartidaException ex) {
             
-            java.util.logging.Logger.getLogger(HallController.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
             
         }
         
-        // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
+        // Ordenar llistat d'usuaris en ordre descendent de puntuació
         Collections.sort(llistaUsuaris, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
-        
-        //String email = "";  // TO DO (Izan): passar email usuari registrat a dins d'aquesta vista (hall.fxml)
-        String email = "Sarayyy@mail.com";  // variable transitòria... eliminar quan es passi mail de l'usuari registrat
+
+        // Recuperar usuari actual
+        String email = LoginController.idSessio;
         String nickname = usuari.getUsuari(email).getNickname();
-        
-        // Localitzar posició usuari actual dins del ranking
-        int posicio = -1;
+        int posicio = 0;
+
+        // Mostrar posició de l'usuari actual
         for (int i = 0; i < llistaUsuaris.size(); i++) {
-            
-            if (llistaUsuaris.get(i).getNickname().equals(nickname))
-            {
-                posicio = i+1;
+
+            if (llistaUsuaris.get(i).getNickname().equals(nickname) && llistaUsuaris.get(i).getPuntuacio() > 0) {
+                posicio = i + 1;
+                label_posicio.setVisible(true);
+                icona_posicio.setVisible(true);
                 break; // Parem la iteració, ja que hem localitzat l'usuari
+
+            } else {
+                label_posicio.setVisible(false);
+                icona_posicio.setVisible(false);
+
+                log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha puntuacions.");
             }
         }
-        
+
+        log.log(Level.INFO, ">> [INFO] Llistat d'usuaris correctament recuperat del servidor");
+
         // Actualitzar Labels UI
         label_nickname.setText(nickname);
         label_puntuacio_usuari.setText(String.valueOf(usuari.getUsuari(email).getPuntuacio()));
-        label_posicio.setText(String.valueOf(posicio));        
+        label_posicio.setText(String.valueOf(posicio));
         // * * * *  FI DADES USUARI(S)  * * * *
-        
         
         
 
         // Mostrar compte enrere
-        //util.compteEnrere(7, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
+        util.compteEnrere(7, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
         // Generar graella i escollir paraula a endevinar segons nivell de dificultat
         nivellPartida = new Random().nextInt(3) + 1;
         switch (nivellPartida) {
@@ -274,9 +287,9 @@ public class JocController implements Initializable {
 
     }
 
-    private void procesarLletraPulsada(String letra) {  
+    private void procesarLletraPulsada(String letra) {
         String filaActualTexto = "";
-      
+
         if (letra.equals("←")) {
             if ((COLUMNA_ACTUAL < (columnes))) {
                 retrocederPosicion();
@@ -368,7 +381,7 @@ public class JocController implements Initializable {
             COLUMNA_ACTUAL--;
         }
     }
-    
+
     /**
      * Mètode per definir l'estil d'una tecla clicada amb el ratolí.
      *

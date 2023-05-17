@@ -19,15 +19,13 @@ import common.Lookups;
 import common.IUsuari;
 import common.PartidaException;
 import common.Usuari;
-//import models.Usuari;
-//import common.UsuariException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.control.TableCell;
+import javafx.scene.image.ImageView;
 import javax.naming.NamingException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import utils.Utils;
 
 /**
@@ -39,9 +37,12 @@ import utils.Utils;
  */
 public class HallController implements Initializable {
 
-    private static final Logger logger = LogManager.getLogger(App.class);
+    private static final Logger log = Logger.getLogger(HallController.class.getName());
     private static int tempsTotal = 0;                                          // Duració en segons pel compte enrere
     Utils util = new Utils();                                                   // Classe amb mètodes globals
+    private ObservableList<Usuari> llistaTop5 = FXCollections.observableArrayList(); // Recuperar 'Hall of Fame' (Top 5 millors jugadors) 
+    private int firstPosition = 0;                                              // Definir la posició per la primera fila del llistat 'Hall of Fame' (Top 5 millors jugadors)
+    static IUsuari usuari;                                                      // Recuperar usuari(s)
 
     @FXML
     private Label label_salutacio, label_puntuacio_usuari, label_nickname, label_posicio, minutsLabel, segonsLabel, dosPuntsLabel;
@@ -57,18 +58,11 @@ public class HallController implements Initializable {
     private TableColumn<Usuari, String> col_nickname;
     @FXML
     private HBox titol, botonera, ranking_usuari;
-
-    // Recuperar 'Hall of Fame' (Top 5 millors jugadors)
-    private ObservableList<Usuari> llistaTop5 = FXCollections.observableArrayList();
-
-    // Definir la posició per la primera fila del llistat 'Hall of Fame' (Top 5 millors jugadors)
-    private int firstPosition = 0;
-
+    @FXML
+    private ImageView icona_posicio;
     @FXML
     private ScrollPane pagina;
-
-    // Recuperar usuari(s)
-    static IUsuari usuari;
+    
 
     /**
      * Inicialitza el controlador de la vista 'Hall'.
@@ -112,21 +106,25 @@ public class HallController implements Initializable {
             // Obtenir una instància remota de la classe 'UsuariEJB'
             usuari = Lookups.usuariEJBRemoteLookup();
 
-            logger.info("Connexió correcta al servidor remot");
+            log.log(Level.INFO, "Connexió correcta al servidor remot");
 
         } catch (NamingException ex) {
 
-            logger.error("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
         }
           
-        tableView_top5.getItems().clear();
+        // Resetejar llistats
+        tableView_top5.getItems().clear();        
+        llistaTop5.clear();
+        
+        // Recuperar usuaris del servidor (Actualitzar dades)
         try {
             
             llistaTop5.addAll(usuari.getUsuaris());
             
         } catch (PartidaException ex) {
             
-            java.util.logging.Logger.getLogger(HallController.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
             
         }
         
@@ -134,23 +132,53 @@ public class HallController implements Initializable {
         // *** DADES USUARI ***
         // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
         Collections.sort(llistaTop5, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
-
-        tableView_top5.getItems().addAll(llistaTop5);
-        logger.info("llistat d'usuaris correctament recuperat del servidor");
         
+        // Recuperar usuari actual
         String email = LoginController.idSessio;
         String nickname = usuari.getUsuari(email).getNickname();
         String salutacio = "Hola, " + nickname + "!";
-        
-        // Localitzar posició usuari actual dins del ranking
         int posicio = -1;
-        for (int i = 0; i < llistaTop5.size(); i++) {
-            
-            if (llistaTop5.get(i).getNickname().equals(nickname))
+        
+        // Mostrar llistat 'Hall of Fame'
+        if (!llistaTop5.isEmpty()) {
+            for (int i = 0; i < llistaTop5.size(); i++)
             {
-                posicio = i+1;
-                break; // Parem la iteració, ja que hem localitzat l'usuari
+
+                System.out.println(">>>>>>>>>>> "+(i+1)+" Nom usuari : " + llistaTop5.get(i).getNickname());
+                
+                // Omplir llistat 'Hall of Fame' només amb usuaris amb puntuacions superiors a 0
+                if (llistaTop5.get(i).getPuntuacio() > 0)
+                {
+                    tableView_top5.getItems().add(llistaTop5.get(i));
+                    log.log(Level.INFO, ">>>>>>>>>>> ["+i+"] Nom usuari dins el rànquing: ", llistaTop5.get(i).getNickname());
+                }
             }
+            
+            if ( !tableView_top5.getItems().isEmpty() )
+            {
+                // Localitzar posició usuari actual dins del ranking
+                for (int i = 0; i < llistaTop5.size(); i++) {
+                    
+                    if ( llistaTop5.get(i).getNickname().equals(nickname) && llistaTop5.get(i).getPuntuacio() > 0 )
+                    {
+                        posicio = i+1;                        
+                        label_posicio.setVisible(true);
+                        icona_posicio.setVisible(true);
+                        break; // Parem la iteració, ja que hem localitzat l'usuari
+                        
+                    } else
+                        
+                    {
+                        label_posicio.setVisible(false);
+                        icona_posicio.setVisible(false);
+
+                        log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha puntuacions.");
+                    }
+                }
+                
+                log.log(Level.INFO, ">> [INFO] Llistat d'usuaris correctament recuperat del servidor");
+            }
+            
         }
         
         // Actualitzar Labels UI
@@ -158,7 +186,7 @@ public class HallController implements Initializable {
         label_nickname.setText(nickname);
         label_puntuacio_usuari.setText(String.valueOf(usuari.getUsuari(email).getPuntuacio()));
         label_posicio.setText(String.valueOf(posicio));
-        
+        // * * * *  FI DADES USUARI(S)  * * * *
 
         
         // Enllaçar columnes TableView amb propietats objecte Usuari
@@ -186,10 +214,7 @@ public class HallController implements Initializable {
         });
 
         col_nickname.setCellValueFactory(new PropertyValueFactory<>("nickname"));
-        col_punts.setCellValueFactory(new PropertyValueFactory<>("puntuacio"));
-
-        // Omplir llistat 'Hall of Fame'
-        tableView_top5.setItems(llistaTop5);
+        col_punts.setCellValueFactory(new PropertyValueFactory<>("puntuacio"));        
 
         // Marcar usuari guanyador (si hi ha algú a la primera posició)
         tableView_top5.setRowFactory(tv -> {
@@ -227,14 +252,15 @@ public class HallController implements Initializable {
         final int targetIndexFinal = targetIndex;
 
         // Cercar l'índex de l'element amb el nickname de l'usuari dins el llistat Top 5
-        for (int i = 0; i < llistaTop5.size(); i++) {
-            if (llistaTop5.get(i).getNickname().equals(nickname)) {
+        for (int i = 0; i < tableView_top5.getItems().size(); i++) {
+            if (tableView_top5.getItems().get(i).getNickname().equals(nickname)) {
                 targetIndex = i;
                 break;
             }
         }
 
-        if (targetIndex != -1 && targetIndex < 5) {
+        if (targetIndex != -1 && targetIndex < 5)
+        {
             // Si l'usuari es troba dins els primers 5 registres, ocultar l'HBox amb la posició/puntuació de l'usuari
             ranking_usuari.setVisible(false);
             ranking_usuari.setManaged(false);
