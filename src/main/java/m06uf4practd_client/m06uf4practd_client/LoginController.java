@@ -6,6 +6,8 @@ package m06uf4practd_client.m06uf4practd_client;
 
 import common.IUsuari;
 import common.Lookups;
+import common.PartidaException;
+import common.Usuari;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -33,6 +35,8 @@ public class LoginController implements Initializable {
 
     static IUsuari usuari;
 
+    String idSessio;
+
     /**
      * Initializes the controller class.
      */
@@ -49,27 +53,29 @@ public class LoginController implements Initializable {
 
     @FXML
     private void entrarBtnClick(ActionEvent event) {
-        if (textFieldEmail.getText().trim().length() <= 0) {
+        if (textFieldEmail.getText().trim().length() <= 0 && textFieldNickname.getText().trim().length() <= 0) {
             //missatge de error
-        } else if (textFieldNickname.getText().trim().length() <= 0) {
-            //login
         } else {
-            //alta
+            //login i/o alta
             try {
-                usuari.crearUsuari(textFieldEmail.getText().trim(),
-                        textFieldNickname.getText().trim());
-            } catch (Exception ex) {
+
+                //login
+                Usuari u = usuari.getUsuari(textFieldEmail.getText());
+
+                //si no hi ha login
+                if (u == null && textFieldNickname.getText().trim().length() > 0) {
+                    System.out.println("Se crea ususario");
+                    usuari.crearUsuari(textFieldEmail.getText().trim(),
+                            textFieldNickname.getText().trim());
+                    idSessio = usuari.getUsuari(textFieldEmail.getText()).getEmail();
+
+                } else {
+                    //error
+                }
+
+            } catch (PartidaException ex) {
                 Logger.getLogger("Error creant usuari: " + System.lineSeparator()).log(Level.SEVERE, null, ex);
             }
-//            try {
-//
-//                idCompra = carro.getSessio(txt_login.getText());
-//
-//                lv_Logger.appendText("Ok client reconegut amb idcompra: " + idCompra);
-//
-//            } catch (CompraException ex) {
-//                lv_Logger.appendText("Error el client no existeix: " + ex + System.lineSeparator());
-//            }
         }
     }
 
