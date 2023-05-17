@@ -1,9 +1,16 @@
 package m06uf4practd_client.m06uf4practd_client;
 
+import common.IPartida;
+import common.IUsuari;
+import common.Lookups;
+import common.Partida;
+import common.PartidaException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -13,6 +20,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import javax.naming.NamingException;
 import utils.Utils;
 
 /**
@@ -38,23 +48,40 @@ public class JocController implements Initializable {
     private Label minutsLabel, segonsLabel, dosPuntsLabel, label_posicio, label_nickname,
             label_puntuacio_usuari, Label_dificultat;
 
-    private int nivellPartida = 1;
+    private String nivellPartida = "Alt";
 
     // Graella
     private int columnes = 4;
     private final int FILES = 6;
     private int FILA_ACTUAL = 1;
     private int COLUMNA_ACTUAL = 1;
-    public static final ArrayList<String> winningWords = new ArrayList<>();
+    public static List<String> winningWords = new ArrayList<>();
+    private static final Logger logger = LogManager.getLogger(JocController.class);
+    private static int tempsTotal = 300;
     private String winningWord;
 
     // Teclat
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
     private final String[] secondRowLetters = {"A", "S", "D", "F", "G", "H", "J", "K", "L"};
     private final String[] thirdRowLetters = {"ENVIAR", "Z", "X", "C", "V", "B", "N", "M", "←"};
+    
+    static IPartida partida;
+    static IUsuari usuari;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        
+        try {
+
+            // Obtenir una instància remota de la classe 'UsuariEJB'
+            partida = Lookups.partidaEJBRemoteLookup();
+            usuari = Lookups.usuariEJBRemoteLookup();
+            partida.checkPartida("joc");
+
+        } catch (NamingException ex) {
+
+            logger.error("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+        }
 
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
@@ -62,35 +89,40 @@ public class JocController implements Initializable {
             Utils.sortir();
         });
 
-        // Inicialitzar dades usuari
-        String nickname = "Usuari";  // TODO: recuperar-ho del servidor
+        try {
+            // TODO dades reals
+            partida.afegirJugador(usuari, "pablo@gmail.com");
+        } catch (PartidaException ex) {
+            java.util.logging.Logger.getLogger(JocController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        String nickname = usuari.getUsuari("pablo@gmail.com").getNickname();  // TODO: recuperar-ho del servidor
         label_nickname.setText(nickname);
 
         // Mostrar compte enrere
-        //util.compteEnrere(7, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
+        tempsTotal = partida.timeRemaining();
+        System.out.println("TEMPS PARTIDA --> " + tempsTotal);
+        util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
         // Generar graella i escollir paraula a endevinar segons nivell de dificultat
-        nivellPartida = new Random().nextInt(3) + 1;
+        nivellPartida = partida.getDificultatPartidaActual();
         switch (nivellPartida) {
-            case 2:
+            case "Mig":
                 columnes = ++columnes;                                          // Nivell 2: 5 lletres
 
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Mitja");
                 pastilla_dificultat.getStyleClass().add("bg-taronja");
 
-                // TODO: Carregar llistat de paraules per endevinar de 5 lletres
-                winningWords.add("cars");
+                winningWords = partida.getParaulesPartida();
 
                 break;
-            case 3:
+            case "Alta":
                 columnes = columnes + 2;                                        // Nivell 3: 6 lletres
 
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Alta");
                 pastilla_dificultat.getStyleClass().add("bg-vermell");
 
-                // TODO: Carregar llistat de paraules per endevinar de 6 lletres
-                winningWords.add("roads");
+                winningWords = partida.getParaulesPartida();
 
                 break;
             default:                                                            // Nivell 1: 4 lletres                
@@ -98,8 +130,7 @@ public class JocController implements Initializable {
                 Label_dificultat.setText("Dificultat: Baixa");
                 pastilla_dificultat.getStyleClass().add("bg-verd");
 
-                // TODO: Carregar llistat de paraules per endevinar de 4 lletres
-                winningWords.add("sky");
+                winningWords = partida.getParaulesPartida();
 
                 break;
         }

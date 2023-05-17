@@ -1,5 +1,6 @@
 package m06uf4practd_client.m06uf4practd_client;
 
+import common.IPartida;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
@@ -19,8 +20,6 @@ import common.Lookups;
 import common.IUsuari;
 import common.PartidaException;
 import common.Usuari;
-//import models.Usuari;
-//import common.UsuariException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Level;
@@ -39,7 +38,7 @@ import utils.Utils;
  */
 public class HallController implements Initializable {
 
-    private static final Logger logger = LogManager.getLogger(App.class);
+    private static final Logger logger = LogManager.getLogger(HallController.class);
     private static int tempsTotal = 0;                                          // Duració en segons pel compte enrere
     Utils util = new Utils();                                                   // Classe amb mètodes globals
 
@@ -70,6 +69,7 @@ public class HallController implements Initializable {
     // 
     static IUsuari usuari;
     //static Usuari usuari;
+    static IPartida partida;
 
     /**
      * Inicialitza el controlador de la vista 'Hall'.
@@ -90,6 +90,20 @@ public class HallController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        
+        // Llegir dades usuaris (posició, nickname, punts) del servidor
+        try {
+
+            // Obtenir una instància remota de la classe 'UsuariEJB'
+            usuari = Lookups.usuariEJBRemoteLookup();
+            partida = Lookups.partidaEJBRemoteLookup();
+
+            logger.info("Connexió correcta al servidor remot");
+
+        } catch (NamingException ex) {
+
+            logger.error("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+        }
 
         // *** BOTONS MENÚ ***
         // Assignar mètodes als botons del menú
@@ -100,25 +114,12 @@ public class HallController implements Initializable {
 
         // *** COMPTADOR ***
         // TODO: verificar si hi ha partida activa, si és el primer en loguejar-se són 2 minuts d'espera, sinó 5
-        tempsTotal = 7;
+        tempsTotal = partida.timeRemaining();
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "joc");
 
         // *** HALL of FAME ***
         Label placeholder = new Label("Encara no hi ha campions/es");           // Especifico un texte d'ajuda per quan el llistat està buit
         tableView_top5.setPlaceholder(placeholder);
-
-        // Llegir dades usuaris (posició, nickname, punts) del servidor
-        try {
-
-            // Obtenir una instància remota de la classe 'UsuariEJB'
-            usuari = Lookups.usuariEJBRemoteLookup();
-
-            logger.info("Connexió correcta al servidor remot");
-
-        } catch (NamingException ex) {
-
-            logger.error("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
-        }
           
         tableView_top5.getItems().clear();
         try {
