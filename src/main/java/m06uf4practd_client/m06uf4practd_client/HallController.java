@@ -49,9 +49,7 @@ public class HallController implements Initializable {
     @FXML
     private Label label_salutacio, label_puntuacio_usuari, label_nickname, label_posicio, minutsLabel, segonsLabel, dosPuntsLabel;
     @FXML
-    private Button btn_ajuda;
-    @FXML
-    private Button btn_sortir;
+    private Button btn_ajuda, btn_sortir;
     @FXML
     private TableView<Usuari> tableView_top5;
     @FXML
@@ -93,22 +91,20 @@ public class HallController implements Initializable {
             Utils.sortir();
         });
         
-        // Llegir dades usuaris (posició, nickname, punts) del servidor
+        // *** RESUPERAR DADES DEL SERVIDOR ***
         try {
 
-            // Obtenir una instància remota de la classe 'UsuariEJB'
+            // Obtenir una instàncies remotes
             usuari = Lookups.usuariEJBRemoteLookup();
             partida = Lookups.partidaEJBRemoteLookup();
 
             log.log(Level.INFO, "Connexió correcta al servidor remot");
 
         } catch (NamingException ex) {
-
             log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
         }
 
-        // *** COMPTADOR ***
-        // TODO: verificar si hi ha partida activa, si és el primer en loguejar-se són 2 minuts d'espera, sinó 5
+        // *** COMPTADOR ***        
         tempsTotal = partida.timeRemaining();
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "joc");
 
@@ -116,6 +112,7 @@ public class HallController implements Initializable {
         Label placeholder = new Label("Encara no hi ha campions/es");           // Especifico un texte d'ajuda per quan el llistat està buit
         tableView_top5.setPlaceholder(placeholder);
           
+        // *** DADES USUARI *** 
         // Resetejar llistats
         tableView_top5.getItems().clear();        
         llistaTop5.clear();
@@ -125,14 +122,10 @@ public class HallController implements Initializable {
             
             llistaTop5.addAll(usuari.getUsuaris());
             
-        } catch (PartidaException ex) {
-            
-            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
-            
+        } catch (PartidaException ex) {            
+            log.log(Level.SEVERE, "[EXCEPTION] Excepció llançada: ", ex + System.lineSeparator());            
         }
         
-        
-        // *** DADES USUARI ***
         // Ordenar llistat 'llistaTop5' en ordre descendent de puntuació
         Collections.sort(llistaTop5, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
         
@@ -143,43 +136,40 @@ public class HallController implements Initializable {
         int posicio = -1;
         
         // Mostrar llistat 'Hall of Fame'
-        if (!llistaTop5.isEmpty()) {
+        if (!llistaTop5.isEmpty()) 
+        {
             for (int i = 0; i < llistaTop5.size(); i++)
-            {
-                
+            {                
                 // Omplir llistat 'Hall of Fame' només amb usuaris amb puntuacions superiors a 0
                 if (llistaTop5.get(i).getPuntuacio() > 0)
                 {
                     tableView_top5.getItems().add(llistaTop5.get(i));
-                    log.log(Level.INFO, ">>>>>>>>>>> ["+i+"] Nom usuari dins el rànquing: ", llistaTop5.get(i).getNickname());
                 }
             }
-            
+
+            // Localitzar posició usuari actual dins del ranking
+            for (int i = 0; i < llistaTop5.size(); i++)
+            {
+                // Desar posició si es tenen punts
+                if ( llistaTop5.get(i).getNickname().equals(nickname) && llistaTop5.get(i).getPuntuacio() > 0 )
+                {
+                    posicio = i+1;                        
+                    label_posicio.setVisible(true);
+                    icona_posicio.setVisible(true);
+                    break; // Parem la iteració, ja que hem localitzat l'usuari
+
+                } else {
+                    label_posicio.setVisible(false);
+                    icona_posicio.setVisible(false);
+                }
+            }
+
             if ( !tableView_top5.getItems().isEmpty() )
             {
-                // Localitzar posició usuari actual dins del ranking
-                for (int i = 0; i < llistaTop5.size(); i++) {
-                    
-                    if ( llistaTop5.get(i).getNickname().equals(nickname) && llistaTop5.get(i).getPuntuacio() > 0 )
-                    {
-                        posicio = i+1;                        
-                        label_posicio.setVisible(true);
-                        icona_posicio.setVisible(true);
-                        break; // Parem la iteració, ja que hem localitzat l'usuari
-                        
-                    } else
-                        
-                    {
-                        label_posicio.setVisible(false);
-                        icona_posicio.setVisible(false);
-
-                        log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha puntuacions.");
-                    }
-                }
-                
                 log.log(Level.INFO, ">> [INFO] Llistat d'usuaris correctament recuperat del servidor");
-            }
-            
+            } else {
+                log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha usuaris amb puntuacions.");
+            }            
         }
         
         // Actualitzar Labels UI
