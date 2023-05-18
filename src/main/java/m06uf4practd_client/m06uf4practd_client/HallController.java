@@ -151,7 +151,7 @@ public class HallController implements Initializable {
                 if (llistaTop5.get(i).getPuntuacio() > 0)
                 {
                     tableView_top5.getItems().add(llistaTop5.get(i));
-                    
+                    log.log(Level.INFO, ">>>>>>>>>>> ["+i+"] Nom usuari dins el rànquing: ", llistaTop5.get(i).getNickname());
                 }
             }
             
