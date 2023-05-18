@@ -165,9 +165,6 @@ public class JocController implements Initializable {
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Mitja");
                 pastilla_dificultat.getStyleClass().add("bg-taronja");
-
-                winningWords = partida.getParaulesPartida();
-
                 break;
             case "Alta":
                 columnes = columnes + 2;                                        // Nivell 3: 6 lletres
@@ -175,17 +172,11 @@ public class JocController implements Initializable {
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Alta");
                 pastilla_dificultat.getStyleClass().add("bg-vermell");
-
-                winningWords = partida.getParaulesPartida();
-
                 break;
             default:                                                            // Nivell 1: 4 lletres                
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Baixa");
                 pastilla_dificultat.getStyleClass().add("bg-verd");
-
-                winningWords = partida.getParaulesPartida();
-
                 break;
         }
         crearGraella(graella, columnes, FILES);
@@ -374,21 +365,22 @@ public class JocController implements Initializable {
             }
 
             if (COLUMNA_ACTUAL == columnes && hasText) {
-//                int tempsParaula = tempsTotal - partida.timeRemaining();
+                int tempsParaula = tempsTotal - partida.timeRemaining();
                 filaActualText = obtenirTextFilaActual();
-//                String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
-//                partida.actualitzarPuntuacio(jugador.getNickname(), resultat, rondesSuperades, tempsParaula);
-//                if (resultat.contains("+") || resultat.contains("-")) {
+                filaActualText = filaActualText.toLowerCase();
+                String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
+                partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
+                if (resultat.contains("+") || resultat.contains("-")) {
                     if (!(FILA_ACTUAL == FILES)) {
                         FILA_ACTUAL++;
                         COLUMNA_ACTUAL = 1;
                     } else {
                         graellaCompleta();
                     }
-//                } else {
-//                    // logica guanya paraula
-//                    graellaCompleta();
-//                }
+                } else {
+                    // logica guanya paraula
+                    graellaCompleta();
+                }
 
             } else {
                 Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
