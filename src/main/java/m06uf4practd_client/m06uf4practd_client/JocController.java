@@ -1,14 +1,15 @@
 package m06uf4practd_client.m06uf4practd_client;
 
+import common.IPartida;
 import common.IUsuari;
 import common.Lookups;
 import common.PartidaException;
 import common.Usuari;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,15 +51,17 @@ public class JocController implements Initializable {
     private Label minutsLabel, segonsLabel, dosPuntsLabel, label_posicio, label_nickname,
             label_puntuacio_usuari, Label_dificultat;
 
-    private int nivellPartida = 1;
+    private String nivellPartida = "Alt";
 
     // Graella
     private int columnes = 4;
     private final int FILES = 6;
     private int FILA_ACTUAL = 1;
     private int COLUMNA_ACTUAL = 1;
-    public static final ArrayList<String> winningWords = new ArrayList<>();
-    private String winningWord;
+    public static List<String> winningWords = new ArrayList<>();
+    private Usuari jugador;
+    private int rondesSuperades = 0;
+    private int tempsTotal = 300;
     private boolean graellaDesactivada = false;
 
     // Teclat
@@ -67,6 +70,7 @@ public class JocController implements Initializable {
     private final String[] thirdRowLetters = {"ENVIAR", "Z", "X", "C", "V", "B", "N", "M", "←"};
 
     // Recuperar usuari(s)
+    static IPartida partida;
     static IUsuari usuari;
 
     // Recuperar 'Hall of Fame' (Top 5 millors jugadors)
@@ -75,48 +79,54 @@ public class JocController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+        // Llegir dades usuaris (posició, nickname, punts) del servidor
+        try {
+
+            // Obtenir una instància remota de la classe 'UsuariEJB'
+            usuari = Lookups.usuariEJBRemoteLookup();
+            partida = Lookups.partidaEJBRemoteLookup();
+            partida.checkPartida("joc");
+
+        } catch (NamingException ex) {
+
+            System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+        }
+
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
         btn_sortir.setOnAction(event -> {
             Utils.sortir();
         });
 
-        
-        
         // * * * *  DADES USUARI(S)  * * * *
-        // Llegir dades usuaris (posició, nickname, punts) del servidor
-        try {
-
-            // Obtenir una instància remota de la classe 'UsuariEJB'
-            usuari = Lookups.usuariEJBRemoteLookup();
-
-            System.out.println("Connexió correcta al servidor remot");
-
-        } catch (NamingException ex) {
-            System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
-        }
-
         // Resetejar llistat
         llistaUsuaris.clear();
-        
+
         // Recuperar usuaris del servidor (Actualitzar dades)
         try {
-            
+
             llistaUsuaris.addAll(usuari.getUsuaris());
-            log.log(Level.INFO, ">> [INFO] Llistat d'usuaris recuperat correctament del servidor");
-            
-        } catch (PartidaException ex) {            
+
+        } catch (PartidaException ex) {
+
             log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
-            
+
         }
-        
+
         // Ordenar llistat d'usuaris en ordre descendent de puntuació
         Collections.sort(llistaUsuaris, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
 
         // Recuperar usuari actual
         String email = LoginController.idSessio;
-        String nickname = usuari.getUsuari(email).getNickname();
+        jugador = usuari.getUsuari(email);
+        String nickname = jugador.getNickname();
         int posicio = 0;
+
+        try {
+            partida.afegirJugador(usuari, email);
+        } catch (PartidaException ex) {
+            Logger.getLogger(JocController.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         // Mostrar posició de l'usuari actual
         for (int i = 0; i < llistaUsuaris.size(); i++) {
@@ -130,42 +140,43 @@ public class JocController implements Initializable {
             } else {
                 label_posicio.setVisible(false);
                 icona_posicio.setVisible(false);
+
+                log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha puntuacions.");
             }
         }
+
+        log.log(Level.INFO, ">> [INFO] Llistat d'usuaris correctament recuperat del servidor");
 
         // Actualitzar Labels UI
         label_nickname.setText(nickname);
         label_puntuacio_usuari.setText(String.valueOf(usuari.getUsuari(email).getPuntuacio()));
         label_posicio.setText(String.valueOf(posicio));
         // * * * *  FI DADES USUARI(S)  * * * *
-        
-        
 
         // Mostrar compte enrere
-        util.compteEnrere(7, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
+        tempsTotal = partida.timeRemaining();
+        util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
         // Generar graella i escollir paraula a endevinar segons nivell de dificultat
-        nivellPartida = new Random().nextInt(3) + 1;
+        nivellPartida = partida.getDificultatPartidaActual();
         switch (nivellPartida) {
-            case 2:
+            case "Mig":
                 columnes = ++columnes;                                          // Nivell 2: 5 lletres
 
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Mitja");
                 pastilla_dificultat.getStyleClass().add("bg-taronja");
 
-                // TODO: Carregar llistat de paraules per endevinar de 5 lletres
-                winningWords.add("cars");
+                winningWords = partida.getParaulesPartida();
 
                 break;
-            case 3:
+            case "Alta":
                 columnes = columnes + 2;                                        // Nivell 3: 6 lletres
 
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Alta");
                 pastilla_dificultat.getStyleClass().add("bg-vermell");
 
-                // TODO: Carregar llistat de paraules per endevinar de 6 lletres
-                winningWords.add("roads");
+                winningWords = partida.getParaulesPartida();
 
                 break;
             default:                                                            // Nivell 1: 4 lletres                
@@ -173,8 +184,7 @@ public class JocController implements Initializable {
                 Label_dificultat.setText("Dificultat: Baixa");
                 pastilla_dificultat.getStyleClass().add("bg-verd");
 
-                // TODO: Carregar llistat de paraules per endevinar de 4 lletres
-                winningWords.add("sky");
+                winningWords = partida.getParaulesPartida();
 
                 break;
         }
@@ -221,7 +231,7 @@ public class JocController implements Initializable {
      *
      * @author Txell Llanas
      */
-     public void crearTeclat(GridPane teclatFila1, GridPane teclatFila2, GridPane teclatFila3) {
+    public void crearTeclat(GridPane teclatFila1, GridPane teclatFila2, GridPane teclatFila3) {
 
         for (int i = 0; i < firstRowLetters.length; i++) {
             Label label = new Label();
@@ -264,8 +274,8 @@ public class JocController implements Initializable {
         }
 
     }
-     
-     /**
+
+    /**
      * Mètode per gestionar els esdeveniments de les tecles del teclat.
      *
      * @param label L'etiqueta (tecla) a la qual s'associa l'esdeveniment.
@@ -279,7 +289,11 @@ public class JocController implements Initializable {
                 return; // Si la graella està plena, s'inhabilita el teclat
             } else {
                 if (!esFinal() || lletraPolsada.equals("←") || lletraPolsada.equals("ENVIAR")) {
-                    procesarLletraPolsada(lletraPolsada);
+                    try {
+                        procesarLletraPolsada(lletraPolsada);
+                    } catch (PartidaException ex) {
+                        Logger.getLogger(JocController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         });
@@ -322,7 +336,7 @@ public class JocController implements Initializable {
      * @param lletra La lletra premuda en el teclat.
      * @author Víctor García
      */
-    private void procesarLletraPolsada(String lletra) {
+    private void procesarLletraPolsada(String lletra) throws PartidaException {
         String filaActualText = "";
 
         if (graellaDesactivada) {
@@ -360,14 +374,21 @@ public class JocController implements Initializable {
             }
 
             if (COLUMNA_ACTUAL == columnes && hasText) {
+//                int tempsParaula = tempsTotal - partida.timeRemaining();
                 filaActualText = obtenirTextFilaActual();
-
-                if (!(FILA_ACTUAL == FILES)) {
-                    FILA_ACTUAL++;
-                    COLUMNA_ACTUAL = 1;
-                } else {
-                    graellaCompleta();
-                }
+//                String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
+//                partida.actualitzarPuntuacio(jugador.getNickname(), resultat, rondesSuperades, tempsParaula);
+//                if (resultat.contains("+") || resultat.contains("-")) {
+                    if (!(FILA_ACTUAL == FILES)) {
+                        FILA_ACTUAL++;
+                        COLUMNA_ACTUAL = 1;
+                    } else {
+                        graellaCompleta();
+                    }
+//                } else {
+//                    // logica guanya paraula
+//                    graellaCompleta();
+//                }
 
             } else {
                 Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
