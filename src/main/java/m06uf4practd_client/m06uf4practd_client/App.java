@@ -23,21 +23,18 @@ public class App extends Application {
     private static final Logger logger = LogManager.getLogger(App.class);
     private static Scene scene;
     private static final String TITOL_JOC = "Benvinguts a Wordle Online!";
-    private static Stage stageReference;
     
     @Override
     public void start(Stage stage) {
-        
-        stageReference = stage;
 
         try {
 
             // Propietats de la finestra
-            scene = new Scene(loadFXML("login"), 850, 760);
+            scene = new Scene(loadFXML("login"), 870, 760);
 
             stage.setScene(scene);
             stage.setTitle(TITOL_JOC);
-            stage.setMinWidth(650);
+            stage.setMinWidth(670);
             stage.setMinHeight(500);
             stage.show();
             

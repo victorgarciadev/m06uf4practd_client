@@ -1,9 +1,20 @@
 package m06uf4practd_client.m06uf4practd_client;
 
+import common.IPartida;
+import common.IUsuari;
+import common.Lookups;
+import common.PartidaException;
+import common.Usuari;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -13,6 +24,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javax.naming.NamingException;
 import utils.Utils;
 
 /**
@@ -22,6 +34,7 @@ import utils.Utils;
  */
 public class JocController implements Initializable {
 
+    private static final Logger log = Logger.getLogger(JocController.class.getName());
     Utils util = new Utils();
 
     @FXML
@@ -33,28 +46,51 @@ public class JocController implements Initializable {
     @FXML
     private GridPane graella, teclatFila1, teclatFila2, teclatFila3;
     @FXML
-    private ImageView avatar_usuari;
+    private ImageView avatar_usuari, icona_posicio;
     @FXML
     private Label minutsLabel, segonsLabel, dosPuntsLabel, label_posicio, label_nickname,
             label_puntuacio_usuari, Label_dificultat;
 
-    private int nivellPartida = 1;
+    private String nivellPartida = "Alt";
 
     // Graella
     private int columnes = 4;
     private final int FILES = 6;
     private int FILA_ACTUAL = 1;
     private int COLUMNA_ACTUAL = 1;
-    public static final ArrayList<String> winningWords = new ArrayList<>();
-    private String winningWord;
+    public static List<String> winningWords = new ArrayList<>();
+    private Usuari jugador;
+    private int rondesSuperades = 0;
+    private int tempsTotal = 300;
+    private boolean graellaDesactivada = false;
 
     // Teclat
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
     private final String[] secondRowLetters = {"A", "S", "D", "F", "G", "H", "J", "K", "L"};
     private final String[] thirdRowLetters = {"ENVIAR", "Z", "X", "C", "V", "B", "N", "M", "←"};
 
+    // Recuperar usuari(s)
+    static IPartida partida;
+    static IUsuari usuari;
+
+    // Recuperar 'Hall of Fame' (Top 5 millors jugadors)
+    private ObservableList<Usuari> llistaUsuaris = FXCollections.observableArrayList();
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
+        // Llegir dades usuaris (posició, nickname, punts) del servidor
+        try {
+
+            // Obtenir una instància remota de la classe 'UsuariEJB'
+            usuari = Lookups.usuariEJBRemoteLookup();
+            partida = Lookups.partidaEJBRemoteLookup();
+            partida.checkPartida("joc");
+
+        } catch (NamingException ex) {
+
+            System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+        }
 
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
@@ -62,35 +98,85 @@ public class JocController implements Initializable {
             Utils.sortir();
         });
 
-        // Inicialitzar dades usuari
-        String nickname = "Usuari";  // TODO: recuperar-ho del servidor
+        // * * * *  DADES USUARI(S)  * * * *
+        // Resetejar llistat
+        llistaUsuaris.clear();
+
+        // Recuperar usuaris del servidor (Actualitzar dades)
+        try {
+
+            llistaUsuaris.addAll(usuari.getUsuaris());
+
+        } catch (PartidaException ex) {
+
+            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
+
+        }
+
+        // Ordenar llistat d'usuaris en ordre descendent de puntuació
+        Collections.sort(llistaUsuaris, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
+
+        // Recuperar usuari actual
+        String email = LoginController.idSessio;
+        jugador = usuari.getUsuari(email);
+        String nickname = jugador.getNickname();
+        int posicio = 0;
+
+        try {
+            partida.afegirJugador(usuari, email);
+        } catch (PartidaException ex) {
+            Logger.getLogger(JocController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // Mostrar posició de l'usuari actual
+        for (int i = 0; i < llistaUsuaris.size(); i++) {
+
+            if (llistaUsuaris.get(i).getNickname().equals(nickname) && llistaUsuaris.get(i).getPuntuacio() > 0) {
+                posicio = i + 1;
+                label_posicio.setVisible(true);
+                icona_posicio.setVisible(true);
+                break; // Parem la iteració, ja que hem localitzat l'usuari
+
+            } else {
+                label_posicio.setVisible(false);
+                icona_posicio.setVisible(false);
+
+                log.log(Level.INFO, ">> [INFO] El llistat d'usuaris és buit. Encara no hi ha puntuacions.");
+            }
+        }
+
+        log.log(Level.INFO, ">> [INFO] Llistat d'usuaris correctament recuperat del servidor");
+
+        // Actualitzar Labels UI
         label_nickname.setText(nickname);
+        label_puntuacio_usuari.setText(String.valueOf(usuari.getUsuari(email).getPuntuacio()));
+        label_posicio.setText(String.valueOf(posicio));
+        // * * * *  FI DADES USUARI(S)  * * * *
 
         // Mostrar compte enrere
-        //util.compteEnrere(7, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
+        tempsTotal = partida.timeRemaining();
+        util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
         // Generar graella i escollir paraula a endevinar segons nivell de dificultat
-        nivellPartida = new Random().nextInt(3) + 1;
+        nivellPartida = partida.getDificultatPartidaActual();
         switch (nivellPartida) {
-            case 2:
+            case "Mig":
                 columnes = ++columnes;                                          // Nivell 2: 5 lletres
 
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Mitja");
                 pastilla_dificultat.getStyleClass().add("bg-taronja");
 
-                // TODO: Carregar llistat de paraules per endevinar de 5 lletres
-                winningWords.add("cars");
+                winningWords = partida.getParaulesPartida();
 
                 break;
-            case 3:
+            case "Alta":
                 columnes = columnes + 2;                                        // Nivell 3: 6 lletres
 
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Alta");
                 pastilla_dificultat.getStyleClass().add("bg-vermell");
 
-                // TODO: Carregar llistat de paraules per endevinar de 6 lletres
-                winningWords.add("roads");
+                winningWords = partida.getParaulesPartida();
 
                 break;
             default:                                                            // Nivell 1: 4 lletres                
@@ -98,8 +184,7 @@ public class JocController implements Initializable {
                 Label_dificultat.setText("Dificultat: Baixa");
                 pastilla_dificultat.getStyleClass().add("bg-verd");
 
-                // TODO: Carregar llistat de paraules per endevinar de 4 lletres
-                winningWords.add("sky");
+                winningWords = partida.getParaulesPartida();
 
                 break;
         }
@@ -156,13 +241,7 @@ public class JocController implements Initializable {
 
             aplicarEstilTeclaApretada(label);
 
-            // Agrega el controlador de eventos al botón
-            label.setOnMouseClicked(event -> {
-                // Lógica para manejar el evento del botón pulsado
-                String letraPulsada = label.getText();
-                // Llama a un método o realiza las acciones que deseas con la letra pulsada
-                procesarLletraPulsada(letraPulsada);
-            });
+            eventsTeclat(label);
         }
 
         for (int i = 0; i < secondRowLetters.length; i++) {
@@ -173,13 +252,7 @@ public class JocController implements Initializable {
 
             aplicarEstilTeclaApretada(label);
 
-            // Agrega el controlador de eventos al botón
-            label.setOnMouseClicked(event -> {
-                // Lógica para manejar el evento del botón pulsado
-                String letraPulsada = label.getText();
-                // Llama a un método o realiza las acciones que deseas con la letra pulsada
-                procesarLletraPulsada(letraPulsada);
-            });
+            eventsTeclat(label);
         }
 
         for (int i = 0; i < thirdRowLetters.length; i++) {
@@ -197,112 +270,212 @@ public class JocController implements Initializable {
 
             aplicarEstilTeclaApretada(label);
 
-            // Agrega el controlador de eventos al botón
-            label.setOnMouseClicked(event -> {
-                // Lógica para manejar el evento del botón pulsado
-                String letraPulsada = label.getText();
-                // Llama a un método o realiza las acciones que deseas con la letra pulsada
-                procesarLletraPulsada(letraPulsada);
-            });
+            eventsTeclat(label);
         }
 
     }
 
-    private void procesarLletraPulsada(String letra) {  
-        String filaActualTexto = "";
-      
-        if (letra.equals("←")) {
-            if ((COLUMNA_ACTUAL < (columnes))) {
-                retrocederPosicion();
-                borrarCasillaActual();
+    /**
+     * Mètode per gestionar els esdeveniments de les tecles del teclat.
+     *
+     * @param label L'etiqueta (tecla) a la qual s'associa l'esdeveniment.
+     * @author Víctor García
+     */
+    private void eventsTeclat(Label label) {
+        // Listener per a quan l'usuari prem una tecla del teclat
+        label.setOnMouseClicked(event -> {
+            String lletraPolsada = label.getText();
+            if (graellaDesactivada) {
+                return; // Si la graella està plena, s'inhabilita el teclat
             } else {
-                Node nodoEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-                if (nodoEtiqueta instanceof Label) {
-                    Label etiqueta = (Label) nodoEtiqueta;
-                    String textoCasilla = etiqueta.getText();
-                    if (!textoCasilla.isEmpty()) {
-                        // Agregar la letra al String filaActualTexto
-                        borrarCasillaActual();
-                    } else {
-                        retrocederPosicion();
-                        borrarCasillaActual();
+                if (!esFinal() || lletraPolsada.equals("←") || lletraPolsada.equals("ENVIAR")) {
+                    try {
+                        procesarLletraPolsada(lletraPolsada);
+                    } catch (PartidaException ex) {
+                        Logger.getLogger(JocController.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
-        } else if (letra.equals("ENVIAR")) { //&& COLUMNA_ACTUAL == columnes
-            System.out.println("ENVIAR");
-            // Comprobar si estamos en la última posición de la fila
-            System.out.println("COLUMNA ACTUAL --> " + COLUMNA_ACTUAL);
-            System.out.println("COLUMNES ---> " + columnes);
-            if (COLUMNA_ACTUAL == (columnes)) {
-                filaActualTexto = obtenerTextoFilaActual();
-                System.out.println("Texto de la fila actual: " + filaActualTexto);
-                // Realizar la acción de enviar
+        });
+    }
 
-                FILA_ACTUAL++;
-                COLUMNA_ACTUAL = 1;
+    /**
+     * Mètode per indicar que la graella està completa i desactivar el teclat.
+     *
+     * @author Víctor García
+     */
+    private void graellaCompleta() {
+        graellaDesactivada = true;
+    }
+
+    /**
+     * Verifica si la posició actual a la graella és la posició final.
+     *
+     * @return `true` si la posició actual és la posició final i conté text,
+     * sinó `false`.
+     * @author Víctor García
+     */
+    private boolean esFinal() {
+        Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+        if (nodeEtiqueta instanceof Label) {
+            Label etiqueta = (Label) nodeEtiqueta;
+            String text = etiqueta.getText();
+
+            if (COLUMNA_ACTUAL == (columnes) && FILA_ACTUAL == FILES && !text.isEmpty() && !text.isBlank()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Processa la lletra premuda en el teclat i realitza les accions
+     * corresponents.
+     *
+     * @param lletra La lletra premuda en el teclat.
+     * @author Víctor García
+     */
+    private void procesarLletraPolsada(String lletra) throws PartidaException {
+        String filaActualText = "";
+
+        if (graellaDesactivada) {
+            return; // Comprovem si la graella està plena
+        }
+
+        if (lletra.equals("←")) {
+            if ((COLUMNA_ACTUAL < (columnes))) {
+                retrocedirPosicio();
+                esborrarCasellaActual();
             } else {
-                Node nodoEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-                if (nodoEtiqueta instanceof Label) {
-                    Label etiqueta = (Label) nodoEtiqueta;
-                    String textoCasilla = etiqueta.getText();
-                    if (!textoCasilla.isEmpty()) {
-                        // Agregar la letra al String filaActualTexto
-                        filaActualTexto += textoCasilla;
+                Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+                if (nodeEtiqueta instanceof Label) {
+                    Label etiqueta = (Label) nodeEtiqueta;
+                    String textCasella = etiqueta.getText();
+                    if (!textCasella.isEmpty()) {
+                        esborrarCasellaActual();
+                    } else {
+                        retrocedirPosicio();
+                        esborrarCasellaActual();
+                    }
+                }
+            }
+        } else if (lletra.equals("ENVIAR")) {
+            boolean hasText = false;
+
+            Node nodeEtiquetaa = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+            if (nodeEtiquetaa instanceof Label) {
+                Label etiquetaa = (Label) nodeEtiquetaa;
+                String text = etiquetaa.getText();
+
+                if (!text.isEmpty() || !text.isBlank()) {
+                    hasText = true;
+                }
+            }
+
+            if (COLUMNA_ACTUAL == columnes && hasText) {
+//                int tempsParaula = tempsTotal - partida.timeRemaining();
+                filaActualText = obtenirTextFilaActual();
+//                String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
+//                partida.actualitzarPuntuacio(jugador.getNickname(), resultat, rondesSuperades, tempsParaula);
+//                if (resultat.contains("+") || resultat.contains("-")) {
+                    if (!(FILA_ACTUAL == FILES)) {
+                        FILA_ACTUAL++;
+                        COLUMNA_ACTUAL = 1;
+                    } else {
+                        graellaCompleta();
+                    }
+//                } else {
+//                    // logica guanya paraula
+//                    graellaCompleta();
+//                }
+
+            } else {
+                Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+
+                if (nodeEtiqueta instanceof Label) {
+                    Label etiqueta = (Label) nodeEtiqueta;
+                    String textCasella = etiqueta.getText();
+
+                    if (!textCasella.isEmpty()) {
+                        // Agreguem la lletra a la fila actual
+                        filaActualText += textCasella;
                     }
                 }
             }
         } else {
-            System.out.println("OTRO");
-            System.out.println("COLUMNA ACTUAL --> " + COLUMNA_ACTUAL);
-            System.out.println("COLUMNES ---> " + columnes);
-
-            Node nodoEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-            if (nodoEtiqueta instanceof Label) {
-                Label etiqueta = (Label) nodoEtiqueta;
-                etiqueta.setText(letra);
+            Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+            if (nodeEtiqueta instanceof Label) {
+                Label etiqueta = (Label) nodeEtiqueta;
+                etiqueta.setText(lletra);
             }
 
+            // Actualitzem la posició de la graella només si no som a l'última fila
             if ((COLUMNA_ACTUAL < (columnes))) {
-                // Actualizar la posición actual en la grilla solo si no estamos en la última posición
                 COLUMNA_ACTUAL++;
             }
+
         }
     }
 
-    private String obtenerTextoFilaActual() {
-        StringBuilder textoFila = new StringBuilder();
-        int filaInicio = (FILA_ACTUAL - 1) * columnes;
-        int filaFin = filaInicio + columnes;
+    /**
+     * Obté el text de la fila actual de la graella.
+     *
+     * @return El text de la fila actual de la graella.
+     * @author Víctor García
+     */
+    private String obtenirTextFilaActual() {
+        StringBuilder textFila = new StringBuilder();
+        int filaInici = (FILA_ACTUAL - 1) * columnes;
+        int filaFinal = filaInici + columnes;
 
-        for (int i = filaInicio; i < filaFin; i++) {
+        for (int i = filaInici; i < filaFinal; i++) {
             Node nodoEtiqueta = graella.getChildren().get(i);
             if (nodoEtiqueta instanceof Label) {
                 Label etiqueta = (Label) nodoEtiqueta;
                 String textoCasilla = etiqueta.getText();
-                textoFila.append(textoCasilla);
+                textFila.append(textoCasilla);
             }
         }
 
-        return textoFila.toString();
+        return textFila.toString();
     }
 
-    private void borrarCasillaActual() {
-        Node nodoEtiquetaActual = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-        if (nodoEtiquetaActual instanceof Label) {
-            Label etiquetaActual = (Label) nodoEtiquetaActual;
-            if (!etiquetaActual.getText().isEmpty()) {
-                etiquetaActual.setText("");
+    /**
+     * Esborra el contingut de la casella actual de la graella.
+     *
+     * Aquest mètode esborra el text de la casella actual de la graella, sempre
+     * i quan la graella no estigui desactivada.
+     *
+     * @author Víctor García
+     */
+    private void esborrarCasellaActual() {
+        if (!graellaDesactivada) {
+            Node nodeEtiquetaActual = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
+            if (nodeEtiquetaActual instanceof Label) {
+                Label etiquetaActual = (Label) nodeEtiquetaActual;
+                if (!etiquetaActual.getText().isEmpty()) {
+                    etiquetaActual.setText("");
+                }
             }
         }
     }
 
-    private void retrocederPosicion() {
+    /**
+     * Retrocedeix la posició a la columna anterior de la graella.
+     *
+     * Aquest mètode decrementa la columna actual en 1, sempre i quan la columna
+     * actual sigui major que 1. S'utilitza per retrocedir a la casella anterior
+     * quan l'usuari prem la tecla "←" en el teclat.
+     *
+     * @author Víctor García
+     */
+    private void retrocedirPosicio() {
         if (COLUMNA_ACTUAL > 1) {
             COLUMNA_ACTUAL--;
         }
     }
-    
+
     /**
      * Mètode per definir l'estil d'una tecla clicada amb el ratolí.
      *

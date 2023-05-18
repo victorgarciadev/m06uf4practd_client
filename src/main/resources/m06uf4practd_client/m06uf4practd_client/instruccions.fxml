@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
@@ -7,10 +12,43 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" maxHeight="500.0" maxWidth="500.0" minHeight="500.0" minWidth="500.0" prefHeight="500.0" prefWidth="500.0" spacing="20.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
+<VBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="700.0" prefWidth="500.0" spacing="20.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
    <children>
-      <Label styleClass="h1" text="Instruccions del joc" />
-      <Label fx:id="instruccions" styleClass="h3" text="Normes del joc" textAlignment="CENTER" wrapText="true" />
+      <VBox alignment="CENTER" spacing="10.0">
+         <children>
+            <Label styleClass="h1" text="IMPORTANT:" textAlignment="CENTER" textFill="#eb1111" wrapText="true">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </Label>
+            <Label styleClass="h1" text="Les paraules a endevinar estan en l'idioma Anglès." textAlignment="CENTER" textFill="#eb1111" wrapText="true" />
+         </children>
+      </VBox>
+      <VBox alignment="CENTER" prefHeight="250.0">
+         <children>
+            <Label styleClass="h1" text="Instruccions del joc" textAlignment="CENTER" wrapText="true">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+               <padding>
+                  <Insets bottom="10.0" />
+               </padding>
+            </Label>
+            <Label fx:id="instruccions" styleClass="h3" text="Normes del joc" textAlignment="CENTER" wrapText="true" />
+         </children>
+         <styleClass>
+            <String fx:value="bloc-informacio" />
+            <String fx:value="shadow" />
+            <String fx:value="bg-clar" />
+            <String fx:value="padding-marges" />
+         </styleClass>
+         <VBox.margin>
+            <Insets bottom="10.0" top="10.0" />
+         </VBox.margin>
+      </VBox>
       <HBox alignment="CENTER_LEFT">
          <children>
             <Label text="V">
@@ -49,6 +87,6 @@
       </HBox>
    </children>
    <padding>
-      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
    </padding>
 </VBox>
