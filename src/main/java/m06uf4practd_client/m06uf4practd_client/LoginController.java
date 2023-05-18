@@ -13,6 +13,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -61,7 +63,8 @@ public class LoginController implements Initializable {
     private void entrarBtnClick(ActionEvent event) {
         try {
             idSessio = null;
-            if (textFieldEmail.getText().trim().length() > 0) {
+            if (textFieldEmail.getText().trim().length() > 0 &&
+                    validateEmail(textFieldEmail.getText())) {
                 //login
                 Usuari u = usuari.getUsuari(textFieldEmail.getText());
 
@@ -79,7 +82,7 @@ public class LoginController implements Initializable {
                     idSessio = u.getEmail();
                 }
             } else {
-                showALerta("Es requereix un email");
+                showALerta("Es requereix un email vàlid");
             }
         } catch (PartidaException ex) {
             logger.info("Error iniciant sessió: " + System.lineSeparator() + ex);
@@ -104,4 +107,11 @@ public class LoginController implements Initializable {
 
         alerta.showAndWait();
     }
+    
+    public static boolean validateEmail(String email){
+        Pattern pattern = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
+    
 }
