@@ -123,7 +123,7 @@ public class JocController implements Initializable {
         int posicio = 0;
 
         try {
-            partida.afegirJugador(usuari, email);
+            partida.afegirJugador(jugador);
         } catch (PartidaException ex) {
             Logger.getLogger(JocController.class.getName()).log(Level.SEVERE, null, ex);
         }
