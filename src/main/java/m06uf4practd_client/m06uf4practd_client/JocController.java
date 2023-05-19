@@ -63,7 +63,7 @@ public class JocController implements Initializable {
     private int rondesSuperades = 0;
     private int tempsTotal = 300;
     private boolean graellaDesactivada = false;
-    private int reiniciosPartida = 0;
+     private int reiniciosPartida = 0;
 
     // Teclat
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
@@ -124,7 +124,7 @@ public class JocController implements Initializable {
         int posicio = 0;
 
         try {
-            partida.afegirJugador(usuari, email);
+            partida.afegirJugador(jugador);
         } catch (PartidaException ex) {
             Logger.getLogger(JocController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -166,9 +166,6 @@ public class JocController implements Initializable {
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Mitja");
                 pastilla_dificultat.getStyleClass().add("bg-taronja");
-
-                winningWords = partida.getParaulesPartida();
-
                 break;
             case "Alta":
                 columnes = columnes + 2;                                        // Nivell 3: 6 lletres
@@ -176,17 +173,11 @@ public class JocController implements Initializable {
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Alta");
                 pastilla_dificultat.getStyleClass().add("bg-vermell");
-
-                winningWords = partida.getParaulesPartida();
-
                 break;
             default:                                                            // Nivell 1: 4 lletres                
                 // Mostrar nivell de dificultat
                 Label_dificultat.setText("Dificultat: Baixa");
                 pastilla_dificultat.getStyleClass().add("bg-verd");
-
-                winningWords = partida.getParaulesPartida();
-
                 break;
         }
         crearGraella(graella, columnes, FILES);
@@ -308,6 +299,7 @@ public class JocController implements Initializable {
     private void graellaCompleta(boolean finalPartida) {
         if (!finalPartida) {
             graellaDesactivada = true;
+            System.out.println("reiniciar nova partida");
             reiniciarPartida();
             graellaDesactivada = false;
         } else {
@@ -328,13 +320,14 @@ public class JocController implements Initializable {
                 }
             }
         }
-
         // Restablecer la posición actual a la primera posición
         FILA_ACTUAL = 1;
         COLUMNA_ACTUAL = 1;
 
         reiniciosPartida++;
+        System.out.println("nº partida: " + reiniciosPartida);
         if (reiniciosPartida >= 2) {
+            System.out.println("Fi partida, no deixa escriure més intents");
             graellaCompleta(true);
         }
     }
@@ -405,21 +398,22 @@ public class JocController implements Initializable {
             }
 
             if (COLUMNA_ACTUAL == columnes && hasText) {
-//                int tempsParaula = tempsTotal - partida.timeRemaining();
+                int tempsParaula = tempsTotal - partida.timeRemaining();
                 filaActualText = obtenirTextFilaActual();
-//                String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
-//                partida.actualitzarPuntuacio(jugador.getNickname(), resultat, rondesSuperades, tempsParaula);
-//                if (resultat.contains("+") || resultat.contains("-")) {
-                if (!(FILA_ACTUAL == FILES)) {
-                    FILA_ACTUAL++;
-                    COLUMNA_ACTUAL = 1;
+                filaActualText = filaActualText.toLowerCase();
+                String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
+                partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
+                if (resultat.contains("+") || resultat.contains("-")) {
+                    if (!(FILA_ACTUAL == FILES)) {
+                        FILA_ACTUAL++;
+                        COLUMNA_ACTUAL = 1;
+                    } else {
+                        graellaCompleta(false);
+                    }
                 } else {
+                    // logica guanya paraula
                     graellaCompleta(false);
                 }
-//                } else {
-//                    // logica guanya paraula
-//                    graellaCompleta(false);
-//                }
 
             } else {
                 Node nodeEtiqueta = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));

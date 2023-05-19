@@ -12,17 +12,67 @@
 
 <VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.LoginController">
    <children>
-      <Label text="Benvingut a Wordle Online!">
-         <font>
-            <Font size="37.0" />
-         </font></Label>
+      <HBox alignment="CENTER">
+         <children>
+            <Label text="Benvingut a ">
+               <font>
+                  <Font size="37.0" />
+               </font>
+            </Label>
+            <HBox id="titol_pastilles" fx:id="titol" alignment="CENTER" spacing="5.0" stylesheets="@../../styles/styles.css">
+               <children>
+                  <Label text="W">
+                     <styleClass>
+                        <String fx:value="casella" />
+                        <String fx:value="casella-verda" />
+                     </styleClass>
+                  </Label>
+                  <Label text="O">
+                     <styleClass>
+                        <String fx:value="casella" />
+                        <String fx:value="casella-grisa" />
+                     </styleClass>
+                  </Label>
+                  <Label text="R">
+                     <styleClass>
+                        <String fx:value="casella" />
+                        <String fx:value="casella-taronja" />
+                     </styleClass>
+                  </Label>
+                  <Label text="D">
+                     <styleClass>
+                        <String fx:value="casella" />
+                        <String fx:value="casella-grisa" />
+                     </styleClass>
+                  </Label>
+                  <Label text="L">
+                     <styleClass>
+                        <String fx:value="casella" />
+                        <String fx:value="casella-verda" />
+                     </styleClass>
+                  </Label>
+                  <Label text="E">
+                     <styleClass>
+                        <String fx:value="casella" />
+                        <String fx:value="casella-grisa" />
+                     </styleClass>
+                  </Label>
+               </children>
+            </HBox>
+            <Label text=" Online!">
+               <font>
+                  <Font size="37.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
       <Label text="Identifica't o Registra't per jugar">
          <font>
             <Font size="18.0" />
          </font>
       </Label>
-      <TextField fx:id="textFieldNickname" promptText="Nickname" />
-      <TextField fx:id="textFieldEmail" promptText="Email" />
+      <TextField fx:id="textFieldNickname" maxWidth="500.0" promptText="Nickname" />
+      <TextField fx:id="textFieldEmail" maxWidth="500.0" promptText="Email" />
       <Button fx:id="primaryButton" onAction="#entrarBtnClick" text="Entrar" />
    </children>
    <padding>
