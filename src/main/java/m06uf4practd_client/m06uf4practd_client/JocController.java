@@ -63,6 +63,7 @@ public class JocController implements Initializable {
     private int rondesSuperades = 0;
     private int tempsTotal = 300;
     private boolean graellaDesactivada = false;
+    private int reiniciosPartida = 0;
 
     // Teclat
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
@@ -304,8 +305,38 @@ public class JocController implements Initializable {
      *
      * @author Víctor García
      */
-    private void graellaCompleta() {
-        graellaDesactivada = true;
+    private void graellaCompleta(boolean finalPartida) {
+        if (!finalPartida) {
+            graellaDesactivada = true;
+            reiniciarPartida();
+            graellaDesactivada = false;
+        } else {
+            graellaDesactivada = true;
+        }
+
+    }
+
+    private void reiniciarPartida() {
+        // Vaciar todas las casillas de la grilla
+        for (int fila = 0; fila < FILES; fila++) {
+            for (int columna = 0; columna < columnes; columna++) {
+                int indiceNodo = fila * columnes + columna;
+                Node nodoEtiqueta = graella.getChildren().get(indiceNodo);
+                if (nodoEtiqueta instanceof Label) {
+                    Label etiqueta = (Label) nodoEtiqueta;
+                    etiqueta.setText("");
+                }
+            }
+        }
+
+        // Restablecer la posición actual a la primera posición
+        FILA_ACTUAL = 1;
+        COLUMNA_ACTUAL = 1;
+
+        reiniciosPartida++;
+        if (reiniciosPartida >= 2) {
+            graellaCompleta(true);
+        }
     }
 
     /**
@@ -379,15 +410,15 @@ public class JocController implements Initializable {
 //                String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
 //                partida.actualitzarPuntuacio(jugador.getNickname(), resultat, rondesSuperades, tempsParaula);
 //                if (resultat.contains("+") || resultat.contains("-")) {
-                    if (!(FILA_ACTUAL == FILES)) {
-                        FILA_ACTUAL++;
-                        COLUMNA_ACTUAL = 1;
-                    } else {
-                        graellaCompleta();
-                    }
+                if (!(FILA_ACTUAL == FILES)) {
+                    FILA_ACTUAL++;
+                    COLUMNA_ACTUAL = 1;
+                } else {
+                    graellaCompleta(false);
+                }
 //                } else {
 //                    // logica guanya paraula
-//                    graellaCompleta();
+//                    graellaCompleta(false);
 //                }
 
             } else {

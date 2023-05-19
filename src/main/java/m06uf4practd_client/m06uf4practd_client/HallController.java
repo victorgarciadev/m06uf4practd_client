@@ -106,6 +106,7 @@ public class HallController implements Initializable {
 
         // *** COMPTADOR ***        
         tempsTotal = partida.timeRemaining();
+        //tempsTotal = 1;
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "joc");
 
         // *** HALL of FAME ***
