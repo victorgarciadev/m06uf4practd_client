@@ -316,6 +316,9 @@ public class JocController implements Initializable {
                 Node nodoEtiqueta = graella.getChildren().get(indiceNodo);
                 if (nodoEtiqueta instanceof Label) {
                     Label etiqueta = (Label) nodoEtiqueta;
+                    etiqueta.getStyleClass().remove("casella-verda");
+                    etiqueta.getStyleClass().remove("casella-taronja");
+                    etiqueta.getStyleClass().remove("casella-grisa");
                     etiqueta.setText("");
                 }
             }
