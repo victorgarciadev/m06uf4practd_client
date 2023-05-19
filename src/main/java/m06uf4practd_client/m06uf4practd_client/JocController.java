@@ -362,7 +362,7 @@ public class JocController implements Initializable {
      */
     private void procesarLletraPolsada(String lletra) throws PartidaException {
         String filaActualText = "";
-
+       
         if (graellaDesactivada) {
             return; // Comprovem si la graella està plena
         }
@@ -388,8 +388,9 @@ public class JocController implements Initializable {
             boolean hasText = false;
 
             Node nodeEtiquetaa = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-            if (nodeEtiquetaa instanceof Label) {
-                Label etiquetaa = (Label) nodeEtiquetaa;
+            Label etiquetaa = (Label) nodeEtiquetaa;
+            if (nodeEtiquetaa instanceof Label) { 
+                
                 String text = etiquetaa.getText();
 
                 if (!text.isEmpty() || !text.isBlank()) {
@@ -404,6 +405,12 @@ public class JocController implements Initializable {
                 String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
                 partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
                 if (resultat.contains("+") || resultat.contains("-")) {
+                    
+                    
+                    System.out.println("paraula: " +filaActualText );
+                    comprovarLletres(etiquetaa, filaActualText , resultat);
+                    
+                    
                     if (!(FILA_ACTUAL == FILES)) {
                         FILA_ACTUAL++;
                         COLUMNA_ACTUAL = 1;
@@ -526,6 +533,40 @@ public class JocController implements Initializable {
             label.getStyleClass().remove("tecla-pressed");
         });
 
+    }
+
+    private void comprovarLletres(Label etiqueta, String paraula, String resultat) {
+       
+        
+        for (int i = 0; i < paraula.length(); i++) {
+            char targetChar = paraula.charAt(i);
+            char guessChar = resultat.charAt(i);
+             
+            
+            etiqueta = (Label) graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (i));
+
+            
+            if (targetChar == guessChar) {
+                //correcta
+                //resultat += targetChar;
+                //rstil verd
+                
+                etiqueta.getStyleClass().add("casella-verda");
+                System.out.println("Lletra verda ["+i+"]: " + targetChar);
+            } else if (String.valueOf(guessChar).equals("+")) {
+                //esta pero 
+                //resultat += "+";
+               // estil taronja
+                etiqueta.getStyleClass().add("casella-taronja");
+                System.out.println("Lletra taronja ["+i+"]: " + targetChar);
+            } else {
+                //resultat += "-";
+                // estil gris
+                 etiqueta.getStyleClass().add("casella-grisa");
+                 System.out.println("Lletra grisa ["+i+"]: " + targetChar);
+            }
+        }
+        
     }
 
 }
