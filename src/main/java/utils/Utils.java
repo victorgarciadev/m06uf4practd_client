@@ -1,5 +1,7 @@
 package utils;
 
+import common.IPartida;
+import common.IUsuari;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -182,7 +184,7 @@ public class Utils {
      */
     
     @FXML
-    public static void sortir() {
+    public static void sortir(IPartida partida, IUsuari jugador) {
 
         // Crear diàleg de confirmació
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
@@ -200,6 +202,8 @@ public class Utils {
 
         // Si l'usuari clica "Sortir", tancar l'aplicació
         if (result.isPresent() && result.get() == btnYes) {
+            partida.tancaSessio();
+            jugador.tancaSessio();
             Platform.exit();
         }
 
@@ -228,9 +232,9 @@ public class Utils {
         // Carregar l'escena amb l'arxiu FXML especificat
         FXMLLoader loader = null;
         if( resultat.equals("guanya") ){
-            loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/toastGuanya.fxml"));
+            loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/ToastGuanya.fxml"));
         } else if( resultat.equals("perd") ) {
-            loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/toastPerd.fxml"));
+            loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/ToastPerd.fxml"));
         }
         Parent root = null;
         try {

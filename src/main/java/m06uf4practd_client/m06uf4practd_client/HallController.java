@@ -83,13 +83,6 @@ public class HallController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-
-        // *** BOTONS MENÚ ***
-        // Assignar mètodes als botons del menú
-        btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
-        btn_sortir.setOnAction(event -> {
-            Utils.sortir();
-        });
         
         // *** RESUPERAR DADES DEL SERVIDOR ***
         try {
@@ -104,8 +97,15 @@ public class HallController implements Initializable {
             log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
         }
 
+        // *** BOTONS MENÚ ***
+        // Assignar mètodes als botons del menú
+        btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
+        btn_sortir.setOnAction(event -> {
+            Utils.sortir(partida, usuari);
+        });
+
         // *** COMPTADOR ***        
-        tempsTotal = partida.timeRemaining();
+        tempsTotal = partida.timeRemaining("hall");
         //tempsTotal = 1;
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "joc");
 

@@ -24,6 +24,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 import javax.naming.NamingException;
 import utils.Utils;
 
@@ -86,7 +88,6 @@ public class JocController implements Initializable {
             // Obtenir una instància remota de la classe 'UsuariEJB'
             usuari = Lookups.usuariEJBRemoteLookup();
             partida = Lookups.partidaEJBRemoteLookup();
-            partida.checkPartida("joc");
 
         } catch (NamingException ex) {
 
@@ -96,7 +97,7 @@ public class JocController implements Initializable {
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
         btn_sortir.setOnAction(event -> {
-            Utils.sortir();
+            Utils.sortir(partida, usuari);
         });
 
         // * * * *  DADES USUARI(S)  * * * *
@@ -155,7 +156,7 @@ public class JocController implements Initializable {
         // * * * *  FI DADES USUARI(S)  * * * *
 
         // Mostrar compte enrere
-        tempsTotal = partida.timeRemaining();
+        tempsTotal = partida.timeRemaining("joc");
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
         // Generar graella i escollir paraula a endevinar segons nivell de dificultat
         nivellPartida = partida.getDificultatPartidaActual();
@@ -402,11 +403,10 @@ public class JocController implements Initializable {
             }
 
             if (COLUMNA_ACTUAL == columnes && hasText) {
-                int tempsParaula = tempsTotal - partida.timeRemaining();
+                int tempsParaula = tempsTotal - partida.timeRemaining("joc");
                 filaActualText = obtenirTextFilaActual();
                 filaActualText = filaActualText.toLowerCase();
                 String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
-                partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
                 if (resultat.contains("+") || resultat.contains("-")) {
                     
                     
@@ -418,10 +418,15 @@ public class JocController implements Initializable {
                         FILA_ACTUAL++;
                         COLUMNA_ACTUAL = 1;
                     } else {
+                        Utils.mostrarToast((Stage) pagina.getScene().getWindow(), "perd", Duration.seconds(2));
+                        partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
+                        rondesSuperades++;
                         graellaCompleta(false);
                     }
                 } else {
-                    // logica guanya paraula
+                    Utils.mostrarToast((Stage)pagina.getScene().getWindow(), "guanya", Duration.seconds(2));
+                    partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
+                    rondesSuperades++;
                     graellaCompleta(false);
                 }
 
@@ -527,8 +532,8 @@ public class JocController implements Initializable {
 
             // TODO: PABLO / VÍCTOR,  eliminar d'aquí...
             // EXEMPLE DE COM MOSTRAR un Toast (2 tipus: guanya/perd), no funciona per si sol a initialize();
-            //Utils.mostrarToast((Stage)pagina.getScene().getWindow(), "guanya", Duration.seconds(2));
-            //Utils.mostrarToast((Stage) pagina.getScene().getWindow(), "perd", Duration.seconds(2));
+//            Utils.mostrarToast((Stage)pagina.getScene().getWindow(), "guanya", Duration.seconds(2));
+//            Utils.mostrarToast((Stage) pagina.getScene().getWindow(), "perd", Duration.seconds(2));
         });
 
         // Netejar l'estil quan el botó del ratolí s'allibera
