@@ -12,17 +12,21 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="700.0" prefWidth="500.0" spacing="20.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
+<VBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="700.0" prefWidth="500.0" spacing="20.0" styleClass="bg-mig" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.InstruccionsController">
    <children>
       <VBox alignment="CENTER" spacing="10.0">
          <children>
-            <Label styleClass="h1" text="IMPORTANT:" textAlignment="CENTER" textFill="#eb1111" wrapText="true">
+            <Label text="IMPORTANT:" textAlignment="CENTER" textFill="#eb1111" wrapText="true">
                <font>
                   <Font name="System Bold" size="15.0" />
                </font>
                <VBox.margin>
                   <Insets />
                </VBox.margin>
+               <styleClass>
+                  <String fx:value="h1" />
+                  <String fx:value="bold" />
+               </styleClass>
             </Label>
             <Label styleClass="h1" text="Les paraules a endevinar estan en l'idioma Anglès." textAlignment="CENTER" textFill="#eb1111" wrapText="true" />
          </children>

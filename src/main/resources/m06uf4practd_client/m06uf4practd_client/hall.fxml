@@ -26,7 +26,7 @@
 
 <ScrollPane fx:id="pagina" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" pannable="true" prefHeight="600.0" prefWidth="800.0" stylesheets="@../../styles/styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="m06uf4practd_client.m06uf4practd_client.HallController">
     <content>
-        <BorderPane>
+        <BorderPane styleClass="bg-mig">
             <top>
                 <GridPane id="container_top" alignment="TOP_CENTER">
                     <columnConstraints>
