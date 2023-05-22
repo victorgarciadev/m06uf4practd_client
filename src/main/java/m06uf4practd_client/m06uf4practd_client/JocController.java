@@ -52,7 +52,8 @@ public class JocController implements Initializable {
             label_puntuacio_usuari, Label_dificultat;
 
     private String nivellPartida = "Alt";
-
+    private String email = "";
+    
     // Graella
     private int columnes = 4;
     private final int FILES = 6;
@@ -63,7 +64,7 @@ public class JocController implements Initializable {
     private int rondesSuperades = 0;
     private int tempsTotal = 300;
     private boolean graellaDesactivada = false;
-     private int reiniciosPartida = 0;
+    private int reiniciosPartida = 0;
 
     // Teclat
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
@@ -90,7 +91,7 @@ public class JocController implements Initializable {
 
         } catch (NamingException ex) {
 
-            System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
         }
 
         // Assignar mètodes als botons del menú
@@ -118,7 +119,7 @@ public class JocController implements Initializable {
         Collections.sort(llistaUsuaris, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
 
         // Recuperar usuari actual
-        String email = LoginController.idSessio;
+        email = LoginController.idSessio;
         jugador = usuari.getUsuari(email);
         String nickname = jugador.getNickname();
         int posicio = 0;
@@ -222,6 +223,7 @@ public class JocController implements Initializable {
      * @param teclatFila3 GridPane amb les tecles de la tercera fila del teclat.
      *
      * @author Txell Llanas
+     * @author Víctor García - Crida a mètodes quan es prem una tecla
      */
     public void crearTeclat(GridPane teclatFila1, GridPane teclatFila2, GridPane teclatFila3) {
 
@@ -292,15 +294,20 @@ public class JocController implements Initializable {
     }
 
     /**
-     * Mètode per indicar que la graella està completa i desactivar el teclat.
+     * Completa la graella de joc, desactivant-la si es final de partida o
+     * reiniciant-la si no ho és. Si es final de partida, la graella es
+     * desactiva. Si no es final de partida, la graella es reinicia,
+     * incrementant el nombre de reinicis de partida.
      *
+     * @param finalPartida Indica si es tracta del final de partida o no
      * @author Víctor García
      */
     private void graellaCompleta(boolean finalPartida) {
         if (!finalPartida) {
             graellaDesactivada = true;
-            System.out.println("reiniciar nova partida");
+            reiniciosPartida++;
             reiniciarPartida();
+            label_puntuacio_usuari.setText(String.valueOf(usuari.getUsuari(email).getPuntuacio()));
             graellaDesactivada = false;
         } else {
             graellaDesactivada = true;
@@ -308,6 +315,14 @@ public class JocController implements Initializable {
 
     }
 
+    /**
+     * Reinicia la partida buidant totes les caselles de la graella i
+     * restabliment de la posició actual a la primera posició. Si el nombre de
+     * reinicis de partida és igual o superior a 20, es mostra la graella
+     * completa.
+     *
+     * @author Víctor García
+     */
     private void reiniciarPartida() {
         // Vaciar todas las casillas de la grilla
         for (int fila = 0; fila < FILES; fila++) {
@@ -324,10 +339,7 @@ public class JocController implements Initializable {
         FILA_ACTUAL = 1;
         COLUMNA_ACTUAL = 1;
 
-        reiniciosPartida++;
-        System.out.println("nº partida: " + reiniciosPartida);
-        if (reiniciosPartida >= 2) {
-            System.out.println("Fi partida, no deixa escriure més intents");
+        if (reiniciosPartida >= 20) {
             graellaCompleta(true);
         }
     }
