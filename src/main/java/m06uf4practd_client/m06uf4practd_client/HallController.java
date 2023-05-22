@@ -97,13 +97,6 @@ public class HallController implements Initializable {
             log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
         }
 
-        // *** BOTONS MENÚ ***
-        // Assignar mètodes als botons del menú
-        btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
-        btn_sortir.setOnAction(event -> {
-            Utils.sortir(partida, usuari);
-        });
-
         // *** COMPTADOR ***        
         tempsTotal = partida.timeRemaining("hall");
         //tempsTotal = 1;
@@ -135,6 +128,13 @@ public class HallController implements Initializable {
         String nickname = usuari.getUsuari(email).getNickname();
         String salutacio = "Hola, " + nickname + "!";
         int posicio = -1;
+        
+        // *** BOTONS MENÚ ***
+        // Assignar mètodes als botons del menú
+        btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
+        btn_sortir.setOnAction(event -> {
+            Utils.sortir(partida, usuari, usuari.getUsuari(email));
+        });
         
         // Mostrar llistat 'Hall of Fame'
         if (!llistaTop5.isEmpty()) 

@@ -98,7 +98,7 @@ public class JocController implements Initializable {
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
         btn_sortir.setOnAction(event -> {
-            Utils.sortir(partida, usuari);
+            Utils.sortir(partida, usuari, jugador);
         });
 
         // * * * *  DADES USUARI(S)  * * * *
@@ -120,6 +120,7 @@ public class JocController implements Initializable {
         Collections.sort(llistaUsuaris, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
 
         // Recuperar usuari actual
+        //email = LoginController.idSessio;
         jugador = usuari.getUsuari(email);
         String nickname = jugador.getNickname();
         int posicio = 0;

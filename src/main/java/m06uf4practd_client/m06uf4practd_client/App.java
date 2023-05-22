@@ -23,7 +23,7 @@ public class App extends Application {
     private static final Logger logger = LogManager.getLogger(App.class);
     private static Scene scene;
     private static final String TITOL_JOC = "Benvinguts a Wordle Online!";
-    
+
     @Override
     public void start(Stage stage) {
 
@@ -36,17 +36,19 @@ public class App extends Application {
             stage.setTitle(TITOL_JOC);
             stage.setMinWidth(670);
             stage.setMinHeight(500);
-            
+
             // Maximitzar finestra
             stage.setMaximized(true);
-        
+            //stage.setFullScreen(true);
+
             stage.show();
-            
+
             stage.setOnCloseRequest(event -> {
-            if (Utils.getMediaPlayer() != null && Utils.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING) {
-                Utils.getMediaPlayer().stop();
-            }
-        });
+                if (Utils.getMediaPlayer() != null && Utils.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING) {
+                    Utils.getMediaPlayer().stop();
+                }
+                Utils.sortirCreu();
+            });
 
         } catch (IOException ex) {
             logger.error("[ERROR] >> No s'ha pogut carregat la interfície d'usuari.");
