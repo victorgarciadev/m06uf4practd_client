@@ -2,9 +2,12 @@ package utils;
 
 import common.IPartida;
 import common.IUsuari;
+import common.Lookups;
+import common.Usuari;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.logging.Level;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -25,24 +28,29 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import javax.naming.NamingException;
 import org.apache.logging.log4j.LogManager;
 import m06uf4practd_client.m06uf4practd_client.App;
+import m06uf4practd_client.m06uf4practd_client.LoginController;
+import org.jboss.logging.Logger;
 
 /**
  * Classe amb mètodes utilitzats de forma recurrent al llarg de l'aplicació.
- * 
+ *
  * @author Txell Llanas
  */
 public class Utils {
-
+    
     static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(App.class);
     static int tempsTotal;
     static Label minutsLabel;
     static Label segonsLabel;
     static Label dosPuntsLabel;
     static String nomVista;
+    private static Thread thread;
     private static MediaPlayer mediaPlayer;
     static final int TEMPS_MINIM_PER_AVISAR = 5;
+    static IUsuari usuari;                                                      // Recuperar usuari(s)
 
     /**
      * Mètode per calcular el compte enrere entre partides, partint del valor
@@ -58,7 +66,7 @@ public class Utils {
      * @author Txell Llanas
      */
     public void compteEnrere(int tempsTotal, Label minutsLabel, Label dosPuntsLabel, Label segonsLabel, String nomVista) {
-
+        
         Utils.tempsTotal = tempsTotal;
         Utils.minutsLabel = minutsLabel;
         Utils.segonsLabel = segonsLabel;
@@ -73,19 +81,19 @@ public class Utils {
             Media media = new Media(arxiuAudio);
             // Inicialitzar el MediaPlayer amb l'arxiu d'àudio
             mediaPlayer = new MediaPlayer(media);
-
+            
         } catch (URISyntaxException e) {
             logger.error("[ERROR] No s'ha pogut localitzar el recurs d'àudio: " + e.getMessage());
         }
-
+        
         actualitzarComptador();
-
-        new Thread(() -> {
-
+        
+        thread = new Thread(() -> {
+            
             try {
-
+                
                 while (Utils.tempsTotal > 0) {
-
+                    
                     if (Utils.tempsTotal <= TEMPS_MINIM_PER_AVISAR) {
 
                         // Canviar color xifres
@@ -99,7 +107,7 @@ public class Utils {
                         mediaPlayer.stop();
                         Utils.tempsTotal--;
                         actualitzarComptador();
-
+                        
                     } else {
 
                         // Seguir descomptant segons
@@ -108,17 +116,18 @@ public class Utils {
                         actualitzarComptador();
                     }
                 }
-
+                
                 App.setRoot(nomVista);                                          // Redirigir a la vista indicada
 
             } catch (InterruptedException ex) {                                 // error en calcular el compte enrere
 
                 logger.error("[ERROR] S'ha interromput el compte enrere: " + ex.getMessage());
-
+                
             } catch (IOException ex) {                                          // error en carregar la vista fxml                
                 logger.error("[ERROR] No s'ha pogut carregat la pantalla del joc: " + ex.getMessage());
             }
-        }).start();
+        });
+        thread.start();
     }
 
     /**
@@ -128,10 +137,10 @@ public class Utils {
      * @author Txell Llanas
      */
     private void actualitzarComptador() {
-
+        
         int minuts = tempsTotal / 60;
         int segons = tempsTotal % 60;
-
+        
         Platform.runLater(() -> {
             minutsLabel.setText(String.format("%02d", minuts));
             segonsLabel.setText(String.format("%02d", segons));
@@ -153,26 +162,26 @@ public class Utils {
             
             FXMLLoader loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/instruccions.fxml"));
             Parent root = loader.load();
-            
+
             // Crear una nova finestra de tipus modal
             Stage helpStage = new Stage();
             helpStage.initModality(Modality.APPLICATION_MODAL);
             helpStage.initOwner(boto.getScene().getWindow());
             helpStage.setTitle("Instruccions del joc");
-            
+
             // Carregar l'escena dins la nova finestra
             Scene scene = new Scene(root);
             helpStage.setScene(scene);
-            
+
             // Mostrar vista d''ajuda
             helpStage.showAndWait();
             
-        }catch (IOException ex) {
-
+        } catch (IOException ex) {
+            
             logger.error("[ERROR] No s'ha pogut carregar la pantalla d'ajuda: " + ex.getMessage());
-
+            
         }
-
+        
     }
 
     /**
@@ -182,9 +191,8 @@ public class Utils {
      *
      * @author Txell Llanas
      */
-    
     @FXML
-    public static void sortir(IPartida partida, IUsuari jugador) {
+    public static void sortir(IPartida partida, IUsuari jugador, Usuari u) {
 
         // Crear diàleg de confirmació
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
@@ -202,11 +210,57 @@ public class Utils {
 
         // Si l'usuari clica "Sortir", tancar l'aplicació
         if (result.isPresent() && result.get() == btnYes) {
+            thread.interrupt();
+            jugador.setUsuariDesactiu(u);
             partida.tancaSessio();
             jugador.tancaSessio();
             Platform.exit();
         }
+        
+    }
+    
+    public static void sortirCreu() {
+        String email = LoginController.idSessio;
+        try {
 
+            // Obtenir una instàncies remotes
+            usuari = Lookups.usuariEJBRemoteLookup();
+            
+        } catch (NamingException ex) {
+            System.out.println("Error de lookups");
+        }
+        Usuari userActual;
+        try {
+            userActual = usuari.getUsuari(email);
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.toString());
+            userActual = null;
+        }
+        // Crear diàleg de confirmació
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Abandonar el joc");
+        confirmDialog.setHeaderText("Segur que vols sortir?");
+        confirmDialog.setContentText("Si surts, es tancarà l'aplicació i et desconnectaràs del servidor.");
+
+        // Configurar botons diàleg
+        ButtonType btnYes = new ButtonType("Sortir");
+        ButtonType btnNo = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmDialog.getButtonTypes().setAll(btnYes, btnNo);
+
+        // Mostrar diàleg i esperar a que l'usuari respongui
+        Optional<ButtonType> result = confirmDialog.showAndWait();
+
+        // Si l'usuari clica "Sortir", tancar l'aplicació
+        if (result.isPresent() && result.get() == btnYes) {
+            if (userActual != null) {
+                usuari.setUsuariDesactiu(userActual);
+            }
+            if (thread != null) {
+                thread.interrupt();
+            }
+            Platform.exit();
+        }
+        
     }
 
     /**
@@ -220,20 +274,19 @@ public class Utils {
     public static MediaPlayer getMediaPlayer() {
         return mediaPlayer;
     }
-    
+
     /**
      * Mètode que mostra un missatge a l'usuari en guanyar/perdre una partida.
-     * 
+     *
      * @author Txell Llanas
      */
-    
     public static void mostrarToast(Stage ownerStage, String resultat, Duration duration) {
-    
+
         // Carregar l'escena amb l'arxiu FXML especificat
         FXMLLoader loader = null;
-        if( resultat.equals("guanya") ){
+        if (resultat.equals("guanya")) {
             loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/ToastGuanya.fxml"));
-        } else if( resultat.equals("perd") ) {
+        } else if (resultat.equals("perd")) {
             loader = new FXMLLoader(Utils.class.getResource("/m06uf4practd_client/m06uf4practd_client/ToastPerd.fxml"));
         }
         Parent root = null;
@@ -254,7 +307,7 @@ public class Utils {
         // Establir propietats del nou Stage perquè es mostri com un diàleg
         toastStage.initModality(Modality.APPLICATION_MODAL);
         toastStage.initOwner(ownerStage);
-        
+
         // Mostrar el Toast
         toastStage.show();
         Timeline timeline = new Timeline();
@@ -262,7 +315,7 @@ public class Utils {
         timeline.getKeyFrames().add(key);
         timeline.setOnFinished(event -> toastStage.close());
         timeline.play();
-
+        
     }
-
+    
 }

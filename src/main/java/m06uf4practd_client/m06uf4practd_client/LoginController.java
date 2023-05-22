@@ -44,6 +44,8 @@ public class LoginController implements Initializable {
     static IUsuari usuari;
 
     public static String idSessio = null;
+    
+    public Usuari u;
 
     /**
      * Initializes the controller class.
@@ -66,8 +68,7 @@ public class LoginController implements Initializable {
             if (textFieldEmail.getText().trim().length() > 0 &&
                     validateEmail(textFieldEmail.getText())) {
                 //login
-                Usuari u = usuari.getUsuari(textFieldEmail.getText());
-
+                u = usuari.getUsuari(textFieldEmail.getText());
                 //si no hi ha login es crea usuari
                 if (u == null) {
                     if (textFieldNickname.getText().trim().length() > 0) {
@@ -75,11 +76,19 @@ public class LoginController implements Initializable {
                         usuari.crearUsuari(textFieldEmail.getText().trim(),
                                 textFieldNickname.getText().trim());
                         idSessio = usuari.getUsuari(textFieldEmail.getText()).getEmail();
+                        u = usuari.getUsuari(textFieldEmail.getText());
+                        usuari.setUsuariJugant(u);
                     } else {
                         showALerta("Es requereix un nickname");
                     }
                 } else {
-                    idSessio = u.getEmail();
+                    if (u.isJugadorActual() == 0) {
+                        usuari.setUsuariJugant(u);
+                        idSessio = u.getEmail();
+                    } else {
+                        showALerta("El jugador ja està logejat.");
+                    }
+                    
                 }
             } else {
                 showALerta("Es requereix un email vàlid");
@@ -95,6 +104,7 @@ public class LoginController implements Initializable {
             }
 
         } catch (IOException ex) {
+            usuari.setUsuariDesactiu(u);
             logger.info(ex);
             showALerta("No es pot carregar el HALL");
         }
