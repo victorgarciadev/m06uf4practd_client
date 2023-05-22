@@ -520,16 +520,10 @@ public class JocController implements Initializable {
      */
     private void aplicarEstilTeclaApretada(Label label) {
 
-        // TODO: quan Pablo/Víctor creïn mètode per traslladar lletra a la graella, no cal capturar l'event, només aplicar l'estil
         // Afegir estil quan el botó del ratolí s'apreta
         label.setOnMousePressed(event -> {
             label.getStyleClass().add("tecla-pressed");
-
-            // TODO: PABLO / VÍCTOR,  eliminar d'aquí...
-            // EXEMPLE DE COM MOSTRAR un Toast (2 tipus: guanya/perd), no funciona per si sol a initialize();
-//            Utils.mostrarToast((Stage)pagina.getScene().getWindow(), "guanya", Duration.seconds(2));
-//            Utils.mostrarToast((Stage) pagina.getScene().getWindow(), "perd", Duration.seconds(2));
-        });
+       });
 
         // Netejar l'estil quan el botó del ratolí s'allibera
         label.setOnMouseReleased(event -> {
@@ -538,6 +532,16 @@ public class JocController implements Initializable {
 
     }
 
+    /**
+     * *
+     * Comproba que les lletres que hi ha a les casselles es posin del color
+     * corresponent
+     *
+     * @param etiqueta LAbels
+     * @param paraula paraula del jugador
+     * @param resultat resultat del servidor
+     * @author Izan J
+     */
     private void comprovarLletres(Label etiqueta, String paraula, String resultat) {
 
         for (int i = 0; i < paraula.length(); i++) {
