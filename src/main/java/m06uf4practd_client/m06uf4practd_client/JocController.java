@@ -92,7 +92,7 @@ public class JocController implements Initializable {
 
         } catch (NamingException ex) {
 
-            System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
+            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
         }
 
         // Assignar mètodes als botons del menú
@@ -422,7 +422,6 @@ public class JocController implements Initializable {
                 String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
                 if (resultat.contains("+") || resultat.contains("-")) {
 
-                    System.out.println("paraula: " + filaActualText);
                     comprovarLletres(etiquetaa, filaActualText, resultat);
 
                     if (!(FILA_ACTUAL == FILES)) {
@@ -568,18 +567,15 @@ public class JocController implements Initializable {
                 //rstil verd
 
                 etiqueta.getStyleClass().add("casella-verda");
-                System.out.println("Lletra verda [" + i + "]: " + targetChar);
             } else if (String.valueOf(guessChar).equals("+")) {
                 //esta pero 
                 //resultat += "+";
                 // estil taronja
                 etiqueta.getStyleClass().add("casella-taronja");
-                System.out.println("Lletra taronja [" + i + "]: " + targetChar);
             } else {
                 //resultat += "-";
                 // estil gris
                 etiqueta.getStyleClass().add("casella-grisa");
-                System.out.println("Lletra grisa [" + i + "]: " + targetChar);
             }
         }
 
