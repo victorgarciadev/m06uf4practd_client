@@ -54,6 +54,7 @@ public class JocController implements Initializable {
             label_puntuacio_usuari, Label_dificultat;
 
     private String nivellPartida = "Alt";
+    private String email = LoginController.idSessio;
 
     // Graella
     private int columnes = 4;
@@ -97,7 +98,7 @@ public class JocController implements Initializable {
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
         btn_sortir.setOnAction(event -> {
-            Utils.sortir(partida, usuari);
+            Utils.sortir(partida, usuari, jugador);
         });
 
         // * * * *  DADES USUARI(S)  * * * *
@@ -119,7 +120,7 @@ public class JocController implements Initializable {
         Collections.sort(llistaUsuaris, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
 
         // Recuperar usuari actual
-        String email = LoginController.idSessio;
+        //email = LoginController.idSessio;
         jugador = usuari.getUsuari(email);
         String nickname = jugador.getNickname();
         int posicio = 0;
@@ -301,6 +302,7 @@ public class JocController implements Initializable {
         if (!finalPartida) {
             graellaDesactivada = true;
             reiniciarPartida();
+            label_puntuacio_usuari.setText(String.valueOf(usuari.getUsuari(email).getPuntuacio()));
             graellaDesactivada = false;
         } else {
             graellaDesactivada = true;
@@ -406,7 +408,6 @@ public class JocController implements Initializable {
                 filaActualText = filaActualText.toLowerCase();
                 String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
                 if (resultat.contains("+") || resultat.contains("-")) {
-
                     comprovarLletres(etiquetaa, filaActualText, resultat);
 
                     if (!(FILA_ACTUAL == FILES)) {
@@ -553,12 +554,16 @@ public class JocController implements Initializable {
             if (targetChar == guessChar) {
                 //estil verd                
                 etiqueta.getStyleClass().add("casella-verda");
+
             } else if (String.valueOf(guessChar).equals("+")) {
+
                 // estil taronja
                 etiqueta.getStyleClass().add("casella-taronja");
+
             } else {
                 // estil gris
                 etiqueta.getStyleClass().add("casella-grisa");
+
             }
         }
 
