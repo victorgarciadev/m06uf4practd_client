@@ -63,8 +63,8 @@ public class LoginController implements Initializable {
     private void entrarBtnClick(ActionEvent event) {
         try {
             idSessio = null;
-            if (textFieldEmail.getText().trim().length() > 0 &&
-                    validateEmail(textFieldEmail.getText())) {
+            if (textFieldEmail.getText().trim().length() > 0
+                    && validateEmail(textFieldEmail.getText())) {
                 //login
                 Usuari u = usuari.getUsuari(textFieldEmail.getText());
 
@@ -79,6 +79,7 @@ public class LoginController implements Initializable {
                         showALerta("Es requereix un nickname");
                     }
                 } else {
+                    //s'agafa l'email
                     idSessio = u.getEmail();
                 }
             } else {
@@ -88,7 +89,7 @@ public class LoginController implements Initializable {
             logger.info("Error iniciant sessió: " + System.lineSeparator() + ex);
             showALerta("Error iniciant sessió");
         }
-        logger.info(">>>>>>>" + idSessio);
+        logger.info("Usuari: " + idSessio);
         try {
             if (idSessio != null) {
                 App.setRoot("hall");
@@ -107,11 +108,11 @@ public class LoginController implements Initializable {
 
         alerta.showAndWait();
     }
-    
-    public static boolean validateEmail(String email){
+
+    public static boolean validateEmail(String email) {
         Pattern pattern = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
-    
+
 }

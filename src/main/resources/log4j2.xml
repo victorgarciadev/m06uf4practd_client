@@ -11,7 +11,7 @@ usuaris no autoritzats.
   <Loggers>
   
     <!-- Etiqueta Root: valor per defecte. Queda definit el nivell TRACE per a tot el codi -->
-    <Root level="TRACE"> <!-- Log levels: FATAL, ERROR, WARN, INFO, DEBUG, TRACE o ALL, OFF(Log desactivat) -->
+    <Root level="INFO"> <!-- Log levels: FATAL, ERROR, WARN, INFO, DEBUG, TRACE o ALL, OFF(Log desactivat) -->
       <AppenderRef ref="ConsoleUser" />
     </Root>
   
