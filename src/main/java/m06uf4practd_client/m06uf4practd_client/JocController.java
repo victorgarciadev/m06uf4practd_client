@@ -24,6 +24,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 import javax.naming.NamingException;
 import utils.Utils;
 
@@ -52,8 +54,8 @@ public class JocController implements Initializable {
             label_puntuacio_usuari, Label_dificultat;
 
     private String nivellPartida = "Alt";
-    private String email = "";
-    
+    private String email = LoginController.idSessio;
+
     // Graella
     private int columnes = 4;
     private final int FILES = 6;
@@ -64,7 +66,7 @@ public class JocController implements Initializable {
     private int rondesSuperades = 0;
     private int tempsTotal = 300;
     private boolean graellaDesactivada = false;
-    private int reiniciosPartida = 0;
+     private int reiniciosPartida = 0;
 
     // Teclat
     private final String[] firstRowLetters = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
@@ -87,17 +89,16 @@ public class JocController implements Initializable {
             // Obtenir una instància remota de la classe 'UsuariEJB'
             usuari = Lookups.usuariEJBRemoteLookup();
             partida = Lookups.partidaEJBRemoteLookup();
-            partida.checkPartida("joc");
 
         } catch (NamingException ex) {
 
-            log.log(Level.SEVERE, "[ERROR] Error iniciant la connexió remota: ", ex + System.lineSeparator());
+            System.out.println("[ERROR] >> Error iniciant la connexió remota: " + ex + System.lineSeparator());
         }
 
         // Assignar mètodes als botons del menú
         btn_ajuda.setOnAction(event -> Utils.mostrarAjuda((btn_ajuda)));
         btn_sortir.setOnAction(event -> {
-            Utils.sortir();
+            Utils.sortir(partida, usuari);
         });
 
         // * * * *  DADES USUARI(S)  * * * *
@@ -119,7 +120,6 @@ public class JocController implements Initializable {
         Collections.sort(llistaUsuaris, Comparator.comparingInt(Usuari::getPuntuacio).reversed());
 
         // Recuperar usuari actual
-        email = LoginController.idSessio;
         jugador = usuari.getUsuari(email);
         String nickname = jugador.getNickname();
         int posicio = 0;
@@ -156,7 +156,7 @@ public class JocController implements Initializable {
         // * * * *  FI DADES USUARI(S)  * * * *
 
         // Mostrar compte enrere
-        tempsTotal = partida.timeRemaining();
+        tempsTotal = partida.timeRemaining("joc");
         util.compteEnrere(tempsTotal, minutsLabel, dosPuntsLabel, segonsLabel, "hall");
         // Generar graella i escollir paraula a endevinar segons nivell de dificultat
         nivellPartida = partida.getDificultatPartidaActual();
@@ -322,6 +322,7 @@ public class JocController implements Initializable {
      * completa.
      *
      * @author Víctor García
+     * @author Izan Jiménez
      */
     private void reiniciarPartida() {
         // Vaciar todas las casillas de la grilla
@@ -331,6 +332,9 @@ public class JocController implements Initializable {
                 Node nodoEtiqueta = graella.getChildren().get(indiceNodo);
                 if (nodoEtiqueta instanceof Label) {
                     Label etiqueta = (Label) nodoEtiqueta;
+                    etiqueta.getStyleClass().remove("casella-verda");
+                    etiqueta.getStyleClass().remove("casella-taronja");
+                    etiqueta.getStyleClass().remove("casella-grisa");
                     etiqueta.setText("");
                 }
             }
@@ -344,7 +348,7 @@ public class JocController implements Initializable {
         }
     }
 
-    /**
+     /**
      * Verifica si la posició actual a la graella és la posició final.
      *
      * @return `true` si la posició actual és la posició final i conté text,
@@ -374,7 +378,7 @@ public class JocController implements Initializable {
      */
     private void procesarLletraPolsada(String lletra) throws PartidaException {
         String filaActualText = "";
-
+       
         if (graellaDesactivada) {
             return; // Comprovem si la graella està plena
         }
@@ -400,8 +404,9 @@ public class JocController implements Initializable {
             boolean hasText = false;
 
             Node nodeEtiquetaa = graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (COLUMNA_ACTUAL - 1));
-            if (nodeEtiquetaa instanceof Label) {
-                Label etiquetaa = (Label) nodeEtiquetaa;
+            Label etiquetaa = (Label) nodeEtiquetaa;
+            if (nodeEtiquetaa instanceof Label) { 
+                
                 String text = etiquetaa.getText();
 
                 if (!text.isEmpty() || !text.isBlank()) {
@@ -410,20 +415,30 @@ public class JocController implements Initializable {
             }
 
             if (COLUMNA_ACTUAL == columnes && hasText) {
-                int tempsParaula = tempsTotal - partida.timeRemaining();
+                int tempsParaula = tempsTotal - partida.timeRemaining("joc");
                 filaActualText = obtenirTextFilaActual();
                 filaActualText = filaActualText.toLowerCase();
                 String resultat = partida.comprovarParaula(filaActualText, rondesSuperades, jugador);
-                partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
                 if (resultat.contains("+") || resultat.contains("-")) {
+                    
+                    
+                    System.out.println("paraula: " +filaActualText );
+                    comprovarLletres(etiquetaa, filaActualText , resultat);
+                    
+                    
                     if (!(FILA_ACTUAL == FILES)) {
                         FILA_ACTUAL++;
                         COLUMNA_ACTUAL = 1;
                     } else {
+                        Utils.mostrarToast((Stage) pagina.getScene().getWindow(), "perd", Duration.seconds(2));
+                        partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
+                        rondesSuperades++;
                         graellaCompleta(false);
                     }
                 } else {
-                    // logica guanya paraula
+                    Utils.mostrarToast((Stage)pagina.getScene().getWindow(), "guanya", Duration.seconds(2));
+                    partida.actualitzarPuntuacio(jugador, resultat, rondesSuperades, tempsParaula);
+                    rondesSuperades++;
                     graellaCompleta(false);
                 }
 
@@ -529,8 +544,8 @@ public class JocController implements Initializable {
 
             // TODO: PABLO / VÍCTOR,  eliminar d'aquí...
             // EXEMPLE DE COM MOSTRAR un Toast (2 tipus: guanya/perd), no funciona per si sol a initialize();
-            //Utils.mostrarToast((Stage)pagina.getScene().getWindow(), "guanya", Duration.seconds(2));
-            //Utils.mostrarToast((Stage) pagina.getScene().getWindow(), "perd", Duration.seconds(2));
+//            Utils.mostrarToast((Stage)pagina.getScene().getWindow(), "guanya", Duration.seconds(2));
+//            Utils.mostrarToast((Stage) pagina.getScene().getWindow(), "perd", Duration.seconds(2));
         });
 
         // Netejar l'estil quan el botó del ratolí s'allibera
@@ -538,6 +553,40 @@ public class JocController implements Initializable {
             label.getStyleClass().remove("tecla-pressed");
         });
 
+    }
+
+    private void comprovarLletres(Label etiqueta, String paraula, String resultat) {
+       
+        
+        for (int i = 0; i < paraula.length(); i++) {
+            char targetChar = paraula.charAt(i);
+            char guessChar = resultat.charAt(i);
+             
+            
+            etiqueta = (Label) graella.getChildren().get((FILA_ACTUAL - 1) * columnes + (i));
+
+            
+            if (targetChar == guessChar) {
+                //correcta
+                //resultat += targetChar;
+                //rstil verd
+                
+                etiqueta.getStyleClass().add("casella-verda");
+                System.out.println("Lletra verda ["+i+"]: " + targetChar);
+            } else if (String.valueOf(guessChar).equals("+")) {
+                //esta pero 
+                //resultat += "+";
+               // estil taronja
+                etiqueta.getStyleClass().add("casella-taronja");
+                System.out.println("Lletra taronja ["+i+"]: " + targetChar);
+            } else {
+                //resultat += "-";
+                // estil gris
+                 etiqueta.getStyleClass().add("casella-grisa");
+                 System.out.println("Lletra grisa ["+i+"]: " + targetChar);
+            }
+        }
+        
     }
 
 }

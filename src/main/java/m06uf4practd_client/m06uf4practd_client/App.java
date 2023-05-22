@@ -36,6 +36,10 @@ public class App extends Application {
             stage.setTitle(TITOL_JOC);
             stage.setMinWidth(670);
             stage.setMinHeight(500);
+            
+            // Maximitzar finestra
+            stage.setMaximized(true);
+        
             stage.show();
             
             stage.setOnCloseRequest(event -> {
