@@ -72,7 +72,6 @@ public class LoginController implements Initializable {
                 //si no hi ha login es crea usuari
                 if (u == null) {
                     if (textFieldNickname.getText().trim().length() > 0) {
-                        System.out.println("Se crea ususario");
                         usuari.crearUsuari(textFieldEmail.getText().trim(),
                                 textFieldNickname.getText().trim());
                         idSessio = usuari.getUsuari(textFieldEmail.getText()).getEmail();
