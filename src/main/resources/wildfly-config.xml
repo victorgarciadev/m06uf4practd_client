@@ -5,17 +5,17 @@
     </authentication-rules>
     <authentication-configurations>
       <configuration name="default">
-         <!-- <set-user-name name="ejbremote"/>   comentar-ho en local -->
+         <set-user-name name="ejbremote"/> 
         <credentials>
-         <!-- <clear-password password="R3m0teEjb"/> comentar-ho en local -->
+         <clear-password password="R3m0teEjb"/>
         </credentials>
       </configuration>
     </authentication-configurations>
   </authentication-client>
   <jboss-ejb-client xmlns="urn:jboss:wildfly-client-ejb:3.0">
       <connections>
-         <!--  <connection uri="remote+http://13.53.140.190:8080" />-->
-          <connection uri="remote+http://localhost:8080" />  <!-- Adreça del servidor on es publiquen els EJB -->
+         <connection uri="remote+http://13.53.140.190:8080" />
+         <!-- <connection uri="remote+http://localhost:8080" />  Adreça del servidor on es publiquen els EJB -->
       </connections>
 </jboss-ejb-client>
 </configuration>
